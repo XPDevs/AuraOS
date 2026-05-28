@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Boot Sequence</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
+            position: fixed;
+            font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+        }
+        .boot-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0px;
+            transition: gap 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .boot-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.8s ease-in-out, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .text-logo {
+            color: #ffffff;
+            font-size: 2.2rem;
+            font-weight: 700;
+            max-width: 0;
+            overflow: hidden;
+            opacity: 0;
+            white-space: nowrap;
+            transition: max-width 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease-in-out;
+        }
+        .sub-text {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 4px;
+            margin-top: 12px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+        }
+        .spinner-container {
+            margin-top: 24px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            overflow: visible;
+            color: #ffffff;
+        }
+        .spinner circle {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 6px;
+            stroke-linecap: round;
+            transform-origin: 50px 50px;
+        }
+        .animate-stage1 .boot-container {
+            opacity: 1;
+        }
+        .animate-stage1 .boot-logo {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .animate-stage2 .brand-wrapper {
+            gap: 12px;
+        }
+        .animate-stage2 .text-logo {
+            max-width: 200px;
+            opacity: 1;
+        }
+        .animate-stage3 .sub-text {
+            opacity: 0.7;
+            transform: translateY(0);
+        }
+        .animate-stage3 .spinner-container {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-container" id="bootContainer">
+        <div class="brand-wrapper">
+            <img src="boot_init.png" alt="Boot Logo" class="boot-logo" id="bootLogo">
+            <div class="text-logo" id="textLogo">AuraOS</div>
+        </div>
+        <div class="sub-text" id="subText">XPDevs</div>
+        <div class="spinner-container" id="spinnerContainer">
+            <svg class="spinner" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40">
+                    <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        values="-90;810"
+                        keyTimes="0;1"
+                        dur="2s"
+                        repeatCount="indefinite" />
+                    <animate
+                        attributeName="stroke-dashoffset"
+                        values="0%;0%;-125.66%"
+                        calcMode="spline"
+                        keySplines="0.61, 1, 0.88, 1; 0.12, 0, 0.39, 0"
+                        keyTimes="0;0.5;1"
+                        dur="2s"
+                        repeatCount="indefinite" />
+                    <animate
+                        attributeName="stroke-dasharray"
+                        values="0% 251.32%;125.66% 125.66%;0% 251.32%"
+                        calcMode="spline"
+                        keySplines="0.61, 1, 0.88, 1; 0.12, 0, 0.39, 0"
+                        keyTimes="0;0.5;1"
+                        dur="2s"
+                        repeatCount="indefinite" />
+                </circle>
+            </svg>
+        </div>
+    </div>
+    <script>
+        let screenMetrics = {};
+        function calculateMetrics() {
+            const width = window.screen.width;
+            const height = window.screen.height;
+            const dpr = window.devicePixelRatio || 1;
+            let radius = '0px';
+            if ((width === 390 && height === 844) || (width === 428 && height === 926) || (width === 393 && height === 852) || (width === 430 && height === 932)) {
+                radius = '48px';
+            } else if (width === 375 || width === 414) {
+                radius = '40px';
+            } else if (width < 360) {
+                radius = '0px';
+            } else {
+                radius = '36px';
+            }
+            screenMetrics = {
+                screenWidth: width,
+                screenHeight: height,
+                viewportWidth: window.innerWidth,
+                viewportHeight: window.innerHeight,
+                devicePixelRatio: dpr,
+                computedRadius: radius
+            };
+        }
+        function runBootSequence() {
+            calculateMetrics();
+            const body = document.body;
+            const container = document.getElementById('bootContainer');
+            const randomDuration = Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000;
+            setTimeout(() => {
+                body.classList.add('animate-stage1');
+            }, 200);
+            setTimeout(() => {
+                body.classList.add('animate-stage2');
+            }, 1000);
+            setTimeout(() => {
+                body.classList.add('animate-stage3');
+            }, 1800);
+            setTimeout(() => {
+                container.style.opacity = '0';
+            }, 200 + randomDuration);
+        }
+        window.addEventListener('resize', calculateMetrics);
+        document.addEventListener('DOMContentLoaded', runBootSequence);
+    </script>
+</body>
+</html>
