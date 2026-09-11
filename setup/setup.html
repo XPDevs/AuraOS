@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>AuraOS Setup</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+        background: #000;
+        font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .phone {
+        position: relative;
+        width: 100%;
+        max-width: 430px;
+        height: 100%;
+        max-height: 932px;
+        background: #ffffff;
+        overflow: hidden;
+        box-shadow: 0 0 60px rgba(0,0,0,0.6);
+        aspect-ratio: 430 / 932;
+        --bg: #ffffff;
+        --text: #000000;
+        --sub: #1c1c1e;
+        --muted: #6e6e73;
+        --border: #e5e5ea;
+        --rowline: #d1d1d6;
+        --keybg: #e9e9eb;
+        --cardbg: #ffffff;
+        --cardicon: #f2f2f7;
+        --subtle: #8e8e93;
+    }
+    .phone.dark {
+        background: #000000;
+        --bg: #000000;
+        --text: #ffffff;
+        --sub: #f2f2f7;
+        --muted: #98989d;
+        --border: #3a3a3c;
+        --rowline: #3a3a3c;
+        --keybg: #2c2c2e;
+        --cardbg: #1c1c1e;
+        --cardicon: #3a3a3c;
+        --subtle: #98989d;
+    }
+    @media (max-aspect-ratio: 430/932), (max-width: 430px) {
+        .phone { max-height: none; aspect-ratio: auto; }
+    }
+
+    .statusbar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 44px;
+        padding: 0 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+        color: #000;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        pointer-events: none;
+    }
+    .statusbar .time { margin-left: 2px; }
+    .icons { display: flex; align-items: center; gap: 6px; }
+
+    .icon-signal rect { fill: currentColor; opacity: 1; transition: opacity 0.2s; }
+    .icon-signal rect.off { fill: transparent; stroke: currentColor; stroke-width: 1; opacity: 0.4; }
+    .icon-wifi { stroke: currentColor; }
+    .icon-wifi circle { fill: currentColor; stroke: none; }
+    .celltype { font-size: 11px; font-weight: 600; margin-right: 1px; }
+
+    .battery { position: relative; width: 22px; height: 11px; }
+    .battery::before {
+        content: ''; position: absolute; inset: 0;
+        border: 1.5px solid currentColor; border-radius: 3px;
+    }
+    .battery::after {
+        content: ''; position: absolute; top: 3.5px; right: -1.5px;
+        width: 2px; height: 4px; background: currentColor; border-radius: 1px;
+    }
+    .battery .fill {
+        position: absolute; top: 1.5px; bottom: 1.5px; left: 1.5px;
+        width: 60%; background: currentColor; border-radius: 1.5px;
+    }
+
+    .backbar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 84px;
+        padding: 48px 0 0 8px;
+        z-index: 90;
+        display: none;
+        align-items: flex-start;
+    }
+    .backbar.show { display: flex; }
+    .back-btn {
+        width: 44px; height: 44px;
+        border: none; background: transparent;
+        color: #007AFF; font-size: 34px; line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+    }
+
+    main { position: absolute; inset: 0; }
+
+    .screen {
+        position: absolute; inset: 0;
+        display: none;
+        flex-direction: column;
+        background: var(--bg);
+        padding: 106px 28px 34px;
+        animation: slideIn 0.3s ease;
+    }
+    .screen.active { display: flex; }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(24px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .top-title {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.3px;
+        color: var(--text);
+        margin-bottom: 26px;
+    }
+    .body-text { font-size: 18px; line-height: 1.4; color: var(--sub); margin-bottom: 22px; }
+    .body-text a { color: #007AFF; text-decoration: none; }
+
+    /* list */
+    .list { border-top: 0.5px solid var(--rowline); border-bottom: 0.5px solid var(--rowline); }
+    .row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 15px 16px;
+        border-bottom: 0.5px solid var(--rowline);
+        color: var(--text); font-size: 17px;
+        cursor: pointer;
+    }
+    .row:last-child { border-bottom: none; }
+    .row .icon { color: var(--subtle); }
+    .row .check { color: #007AFF; font-size: 20px; opacity: 0; }
+    .row.selected .check { opacity: 1; }
+    .row.subtle { color: #007AFF; }
+    .row.first { border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .row input { color: var(--text); }
+    .row input::placeholder { color: var(--subtle); }
+    .wi-fi-icon { display: inline-block; width: 16px; height: 13px; position: relative; color: #B8B8BD; margin-left: 8px; }
+    .wi-fi-icon::after {
+        content: ''; position: absolute; top: 3px; left: 50%;
+        width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+    }
+    .wi-fi-icon::before {
+        content: ''; position: absolute; top: 7px; left: 50%; transform: translateX(-50%);
+        width: 14px; height: 14px; border: 2px solid transparent;
+        border-top-color: currentColor; border-radius: 50%;
+    }
+    .wi-fi-icon.strength-2 { color: var(--subtle); }
+    .wi-fi-icon.strength-4 { color: var(--text); }
+
+    .btn {
+        width: 100%;
+        padding: 15px 0;
+        border: none; border-radius: 16px;
+        background: #007AFF; color: #fff;
+        font-size: 17px; font-weight: 600;
+        margin-top: auto;
+        cursor: pointer;
+    }
+    .btn:disabled {
+        background: #99C9FF;
+        cursor: default;
+    }
+    .btn.center { margin-top: auto; }
+    .link {
+        width: 100%; text-align: center;
+        border: none; background: transparent;
+        color: #007AFF; font-size: 17px; font-weight: 400;
+        padding: 16px 0 6px; cursor: pointer;
+    }
+
+    /* hello */
+    .screen.hello { background: #000; align-items: center; justify-content: center; padding: 0; touch-action: none; }
+    .hello-logo {
+        position: absolute;
+        top: calc(50% - 160px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 132px; height: 88px; object-fit: contain;
+        animation: logoPulse 5s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 2;
+    }
+    @keyframes logoPulse {
+        0%, 100% { transform: translateX(-50%) scale(1); }
+        50% { transform: translateX(-50%) scale(1.03); }
+    }
+    .hello-lang {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 22px;
+        margin-top: 50px;
+        animation: langEnter 1s ease both;
+    }
+    @keyframes langEnter {
+        from { opacity: 0; transform: translateY(18px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .greet {
+        color: #fff;
+        font-size: 82px;
+        font-weight: 100;
+        letter-spacing: -2px;
+        white-space: nowrap;
+        line-height: 1.1;
+        transition: opacity 0.8s ease, transform 0.8s ease;
+        text-shadow: 0 30px 80px rgba(255,255,255,0.08);
+    }
+    .greet.fading { opacity: 0; transform: translateY(16px) scale(0.94); }
+    .greet-lang {
+        color: rgba(255,255,255,0.45);
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .swipe-hint {
+        position: absolute; bottom: 80px;
+        left: 0; right: 0; text-align: center;
+        color: rgba(255,255,255,0.55);
+        cursor: pointer;
+        z-index: 2;
+    }
+    .swipe-hint .chev { font-size: 30px; line-height: 1; animation: chevBounce 1.6s ease-in-out infinite; }
+    .swipe-hint .swipe-text { font-size: 14px; margin-top: 8px; }
+    @keyframes chevBounce {
+        0%, 100% { transform: translateY(0); opacity: 0.35; }
+        50% { transform: translateY(10px); opacity: 1; }
+    }
+    @keyframes swipeExit {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-90px); }
+    }
+
+    /* wifi join */
+    .join-overlay {
+        position: absolute; inset: 0; z-index: 60;
+        background: rgba(0,0,0,0.25);
+        display: none; align-items: center; justify-content: center;
+    }
+    .join-overlay.show { display: flex; }
+    .join-card {
+        width: 300px; background: var(--cardbg); border-radius: 16px;
+        padding: 22px 20px;
+        text-align: center;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+    .join-card .label { font-size: 17px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .join-card svg { margin: 0 auto; }
+    .join-card .sub { font-size: 14px; color: var(--subtle); margin-top: 14px; }
+
+    /* data & privacy */
+    .data-icon {
+        width: 86px; height: 86px; border-radius: 20px;
+        background: linear-gradient(135deg, #007AFF, #5AC8FA);
+        margin: 0 auto 34px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .data-icon svg { width: 44px; height: 44px; }
+
+    /* face id */
+    .face-ring {
+        width: 150px; height: 150px; margin: 8px auto 40px;
+        border: 2.5px solid var(--border); border-radius: 50%;
+        position: relative;
+        display: flex; align-items: center; justify-content: center;
+        animation: facePulse 2.2s ease-in-out infinite;
+    }
+    @keyframes facePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+    .face-ring .inner { text-align: center; }
+    .face-ring .inner svg { width: 54px; height: 54px; color: var(--text); }
+    .face-ring .inner div { font-size: 13px; color: var(--subtle); margin-top: 4px; }
+
+    /* passcode */
+    .pincode { margin: 60px 0 10px; text-align: center; }
+    .pincode span {
+        display: inline-block; width: 16px; height: 16px;
+        border: 1.5px solid var(--subtle); border-radius: 50%;
+        margin: 0 12px;
+        transition: 0.1s;
+        background: transparent;
+    }
+    .pincode span.filled { background: var(--text); border-color: var(--text); }
+    .keypad {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px 8px;
+        max-width: 320px; margin-left: auto; margin-right: auto;
+    }
+    .key {
+        height: 64px; border-radius: 50%;
+        border: none; background: var(--keybg);
+        font-size: 26px; font-weight: 400; color: var(--text);
+        cursor: pointer;
+    }
+    .key:hover { filter: brightness(0.92); }
+
+    /* customize cards */
+    .cards { display: flex; gap: 12px; margin-bottom: 30px; }
+    .card {
+        flex: 1; border: 1px solid var(--border); border-radius: 14px;
+        padding: 18px 12px 24px; text-align: center; cursor: pointer;
+        transition: 0.15s;
+    }
+    .card.selected { border-color: #007AFF; background: #EAF3FF; }
+    .phone.dark .card.selected { border-color: #007AFF; background: #0b1f36; }
+    .card .card-icon {
+        width: 60px; height: 60px; border-radius: 14px;
+        background: var(--cardicon); margin: 0 auto 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text);
+    }
+    .card .card-icon svg { width: 30px; height: 30px; }
+    .card h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .card p { font-size: 13px; color: var(--subtle); line-height: 1.35; }
+    .card.dark { background: #1c1c1e; border-color: #1c1c1e; }
+    .card.dark h3, .card.dark .card-icon { color: #fff; }
+    .card.dark p { color: #AEAEB2; }
+    .card.dark.selected { border-color: #007AFF; }
+
+    /* switches */
+    .switch-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 4px;
+        border-bottom: 0.5px solid var(--border);
+    }
+    .switch-row:last-child { border-bottom: none; }
+    .switch-row .label { font-size: 17px; color: var(--text); }
+    .switch {
+        width: 51px; height: 31px; border-radius: 16px;
+        background: #E9E9EB; position: relative; cursor: pointer;
+        transition: 0.2s;
+    }
+    .switch::after {
+        content: ''; position: absolute; top: 2px; left: 2px;
+        width: 27px; height: 27px; border-radius: 50%;
+        background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+        transition: 0.2s;
+    }
+    .switch.on { background: #34C759; }
+    .switch.on::after { left: 22px; }
+
+    /* appearance */
+    .appearance-wrap { display: flex; gap: 14px; margin: 10px 0 28px; }
+    .appearance {
+        flex: 1; border-radius: 16px; overflow: hidden;
+        border: 2px solid transparent; cursor: pointer;
+        text-align: center;
+    }
+    .appearance.selected { border-color: #007AFF; }
+    .appearance .preview { height: 220px; position: relative; }
+    .appearance.light .preview { background: linear-gradient(180deg, #A8C9F0, #ffffff); }
+    .appearance.dark .preview { background: linear-gradient(180deg, #1c1c1e, #000); }
+    .appearance .preview .t { position: absolute; top: 34%; left: 0; right: 0; text-align: center; font-size: 30px; font-weight: 100; }
+    .appearance.light .preview .t { color: #1c1c1e; }
+    .appearance.dark .preview .t { color: #fff; }
+    .appearance .cap { font-size: 14px; padding: 12px 0; color: #1c1c1e; font-weight: 500; }
+    .appearance.dark .cap { color: #fff; }
+    .appearance.light { border-color: #E5E5EA; background: #fff; }
+    .appearance.dark { background: #1c1c1e; }
+    .appearance.dark.selected, .appearance.light.selected { border-color: #007AFF; }
+
+    /* welcome */
+    .screen.welcome { align-items: center; text-align: center; }
+    .screen.welcome .logo-img { width: 120px; height: 80px; object-fit: contain; margin: 60px auto 30px; }
+    .screen.welcome h1 { font-size: 34px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+    .screen.welcome p { font-size: 17px; color: var(--muted); line-height: 1.4; max-width: 300px; margin: 0 auto 20px; }
+    .screen.welcome .btn { margin-top: 60px; }
+
+    .toast {
+        position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.8); color: #fff; font-size: 14px;
+        padding: 12px 20px; border-radius: 14px;
+        opacity: 0; transition: 0.3s; pointer-events: none; z-index: 200;
+        white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    .spinner-mini { width: 36px; height: 36px; overflow: visible; }
+    .spinner-mini circle { fill: none; stroke: #007AFF; stroke-width: 4px; stroke-linecap: round; transform-origin: 50px 50px; }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+    <div class="statusbar" id="statusbar">
+        <div class="time" id="time">9:41</div>
+        <div class="icons">
+            <span class="celltype" id="cellType" style="display:none">LTE</span>
+            <svg class="icon-signal" width="18" height="12" viewBox="0 0 18 12">
+                <rect x="1" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13" y="0" width="3" height="12" rx="1"/>
+            </svg>
+            <svg class="icon-wifi" width="17" height="12" viewBox="0 0 17 12" fill="none" stroke-width="1.6" stroke-linecap="round">
+                <path d="M1 4.2a11 11 0 0 1 15 0"/><path d="M3.5 7a7.5 7.5 0 0 1 10 0"/><path d="M6 9.6a4 4 0 0 1 5 0"/><circle cx="8.5" cy="11" r="1.1" fill="#000"/>
+            </svg>
+            <div class="battery"><div class="fill"></div></div>
+        </div>
+    </div>
+
+    <div class="backbar" id="backbar">
+        <button class="back-btn" onclick="goPrev()">‹</button>
+    </div>
+
+    <main>
+
+        <!-- HELLO -->
+        <section class="screen hello" id="s-hello">
+            <img src="logo.png" alt="" class="hello-logo">
+            <div class="hello-lang">
+                <div class="greet" id="greet">Hello</div>
+                <div class="greet-lang" id="greetLang">English</div>
+            </div>
+            <div class="swipe-hint">
+                <div class="chev">⌄</div>
+                <div class="swipe-text" data-i18n="hello.swipe">Swipe down to continue</div>
+            </div>
+        </section>
+
+        <!-- COUNTRY OR REGION -->
+        <section class="screen" id="s-country">
+            <h2 class="top-title" data-i18n="country.title">Country or<br>Region</h2>
+            <div class="list">
+                <div class="row" onclick="pick(this, 'en')"><span>Australia</span><span class="check">✓</span></div>
+                <div class="row" onclick="pick(this, 'en')"><span>Canada</span><span class="check">✓</span></div>
+                <div class="row" onclick="pick(this, 'en')"><span>United Kingdom</span><span class="check">✓</span></div>
+                <div class="row selected" onclick="pick(this, 'en')"><span>United States</span><span class="check">✓</span></div>
+                <div class="row" onclick="pick(this, 'zh-Hans')"><span>China mainland</span><span class="check">✓</span></div>
+                <div class="row" onclick="pick(this, 'en')"><span>Singapore</span><span class="check">✓</span></div>
+                <div class="row" onclick="pick(this, 'ja')"><span>Japan</span><span class="check">✓</span></div>
+            </div>
+            <button class="btn" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- WIFI -->
+        <section class="screen" id="s-wifi">
+            <h2 class="top-title" data-i18n="wifi.title">Wi-Fi Networks</h2>
+            <p class="body-text" data-i18n="wifi.body">Choose a network, or connect to PC or router directly.</p>
+            <div class="list">
+                <div class="row" onclick="joinWifi(this)"><span>XPDevs Office <span class="wi-fi-icon strength-4"></span></span></div>
+                <div class="row" onclick="joinWifi(this)"><span>Aura-5G <span class="wi-fi-icon strength-4"></span></span></div>
+                <div class="row" onclick="joinWifi(this)"><span>HomeNet <span class="wi-fi-icon strength-2"></span></span></div>
+                <div class="row" onclick="joinWifi(this)"><span>FreeCoffee_WiFi <span class="wi-fi-icon strength-2"></span></span></div>
+                <div class="row" onclick="joinWifi(this)"><span>Vodafone-D3B9 <span class="wi-fi-icon strength-4"></span></span></div>
+                <div class="row subtle" onclick="next('s-privacy')" data-i18n="wifi.other"><span>Other…</span></div>
+            </div>
+            <button class="btn" id="wifi-continue" disabled onclick="next('s-privacy')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- DATA & PRIVACY -->
+        <section class="screen" id="s-privacy">
+            <div class="data-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="privacy.title">Data &amp; Privacy</h2>
+            <p class="body-text" style="text-align:center" data-i18n="privacy.body">
+                It’s your data. You decide what to share and what not to share.<br><br>
+                Everything processed on-device stays on-device.
+            </p>
+            <button class="btn center" onclick="next('s-faceid')" data-i18n="privacy.continue">Continue &amp; Agree</button>
+        </section>
+
+        <!-- FACE ID -->
+        <section class="screen" id="s-faceid">
+            <div class="face-ring">
+                <div class="inner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                        <circle cx="12" cy="9" r="3"/><path d="M6 18c1-3 3-4 6-4s5 1 6 4"/>
+                    </svg>
+                    <div data-i18n="faceid.name">Aura Face</div>
+                </div>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="faceid.title">Set Up Aura Face</h2>
+            <p class="body-text" style="text-align:center" data-i18n="faceid.body">
+                Use Aura Face to securely unlock your Aura, make purchases, and sign in to apps.
+            </p>
+            <button class="btn center" id="faceid-main" onclick="startFaceScan()" data-i18n="faceid.main">Set Up Aura Face</button>
+            <button class="link" onclick="next('s-passcode')" data-i18n="faceid.later">Set Up Later</button>
+        </section>
+
+        <!-- PASSCODE -->
+        <section class="screen" id="s-passcode">
+            <h2 class="top-title" style="text-align:center" data-i18n="passcode.title">Create a<br>Passcode</h2>
+            <p class="body-text" style="text-align:center" id="pass-hint" data-i18n="passcode.hint">This passcode will be used to unlock your Aura.</p>
+            <div class="pincode" id="pincode"></div>
+            <div class="keypad" id="keypad"></div>
+        </section>
+
+        <!-- CUSTOMIZE -->
+        <section class="screen" id="s-customize">
+            <h2 class="top-title" data-i18n="customize.title">Customize Your Aura</h2>
+            <div class="cards">
+                <div class="card dark selected" onclick="pickCard(this)">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h3 data-i18n="customize.c1.title">Customize</h3>
+                    <p data-i18n="customize.c1.desc">Set up appearance, widgets, and Focus as you like.</p>
+                </div>
+                <div class="card" onclick="pickCard(this)">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/>
+                        </svg>
+                    </div>
+                    <h3 data-i18n="customize.c2.title">Transfer from Android</h3>
+                    <p data-i18n="customize.c2.desc">Move apps, messages, and photos from your old device.</p>
+                </div>
+            </div>
+            <button class="btn" onclick="next('s-appsdata')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- APPS & DATA -->
+        <section class="screen" id="s-appsdata">
+            <h2 class="top-title" data-i18n="appsdata.title">Apps &amp; Data</h2>
+            <p class="body-text" data-i18n="appsdata.body">Choose your transfer method.</p>
+            <div class="list">
+                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r1">Move Data from Android</span><span class="icon">→</span></div>
+                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r2">Restore from Aura Cloud Backup</span><span class="icon">→</span></div>
+                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r3">Don’t Transfer Data</span><span class="icon">→</span></div>
+            </div>
+            <button class="btn" onclick="next('s-pay')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- APPLE PAY / SECURE ENROLL -->
+        <section class="screen" id="s-pay">
+            <div class="card-icon" style="width:80px;height:80px;border-radius:18px;background:var(--cardicon);margin:20px auto 30px;display:flex;align-items:center;justify-content:center;color:var(--text);">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.4 14.4l-4.6-4.6 1.4-1.4 3.2 3.2 6.1-6.1 1.4 1.4-7.5 7.5z"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="pay.title">Secure Enroll</h2>
+            <p class="body-text" style="text-align:center" data-i18n="pay.body">
+                Add a card to <strong>Aura Pay</strong> for secure payments in stores and in apps.
+            </p>
+            <button class="btn center" onclick="next('s-auraid')" data-i18n="pay.btn">Add Card Later</button>
+        </section>
+
+<!-- AURA ID SIGN IN -->
+        <section class="screen" id="s-auraid">
+            <h2 class="top-title" data-i18n="auraid.title">Sign In with<br>Your Aura ID</h2>
+            <p class="body-text" data-i18n="auraid.body">Your Aura ID is used for Messages, the App Store, Aura Music, and more.</p>
+            <div class="list" style="border-radius:12px;overflow:hidden">
+                <div class="row" style="cursor:text;flex-direction:column;align-items:flex-start;gap:6px">
+                    <input type="text" id="auraid-email" placeholder="name@auraos.app" style="border:none;outline:none;font-size:17px;width:100%;background:transparent" oninput="checkAuraId()">
+                </div>
+                <div class="row" style="cursor:text;flex-direction:column;align-items:flex-start;gap:6px">
+                    <input type="password" id="auraid-pass" placeholder="Password" style="border:none;outline:none;font-size:17px;width:100%;background:transparent" oninput="checkAuraId()">
+                </div>
+            </div>
+            <button class="btn" id="auraid-btn" disabled onclick="next('s-terms')" data-i18n="continue">Continue</button>
+            <button class="link" onclick="next('s-terms')" data-i18n="auraid.skip">Don’t have an Aura ID? Create yours.</button>
+        </section>
+
+        <!-- TERMS -->
+        <section class="screen" id="s-terms">
+            <h2 class="top-title" data-i18n="terms.title">Terms and<br>Conditions</h2>
+            <div class="body-text" style="max-height:46%;overflow-y:auto;font-size:15px;color:var(--muted)">
+                <p><strong>AuraOS Software License Agreement</strong></p>
+                <p style="margin-top:10px">1. Acceptance. By using AuraOS you agree to these terms, the XPDevs Privacy Policy, and the Terms of Service.</p>
+                <p style="margin-top:8px">2. License. XPDevs grants you a limited, non-transferable license to use AuraOS you have obtained in accordance with these terms.</p>
+                <p style="margin-top:8px">3. Updates. This software may automatically download and install updates. Updates may add, remove, or change features.</p>
+                <p style="margin-top:8px">4. Privacy. Details about the data AuraOS collects are described in the Data &amp; Privacy pages shown earlier.</p>
+                <p style="margin-top:8px">5. Warranty. To the extent permitted by law, AuraOS is provided “as is” without warranty of any kind.</p>
+                <p style="margin-top:8px">6. Software subject to restrictions. This software may be subject to export laws.</p>
+                <p style="margin-top:8px">7. Limitation of Liability. To the maximum extent permitted, XPDevs shall not be liable for indirect or consequential damages.</p>
+            </div>
+            <button class="btn" onclick="next('s-express')" data-i18n="terms.agree">Agree</button>
+        </section>
+
+        <!-- EXPRESS SETTINGS -->
+        <section class="screen" id="s-express">
+            <h2 class="top-title" data-i18n="express.title">Express Settings</h2>
+            <p class="body-text" data-i18n="express.body">These features set themselves up automatically. You can change them in Settings later.</p>
+            <div class="switch-row"><span class="label" data-i18n="express.msg">Messages</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <div class="switch-row"><span class="label" data-i18n="express.loc">Location Services</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <div class="switch-row"><span class="label">Aura Assistant</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <div class="switch-row"><span class="label" data-i18n="express.find">Find My Aura</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <div class="switch-row"><span class="label" data-i18n="express.st">Screen Time</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <button class="btn" onclick="next('s-analytics')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section class="screen" id="s-analytics">
+            <h2 class="top-title" data-i18n="analytics.title">Analytics &amp; Privacy</h2>
+            <p class="body-text" data-i18n="analytics.body">
+                Help improve AuraOS by sharing widget usage, system analytics, and crash data with XPDevs. This won’t be associated with your identity.
+            </p>
+            <button class="btn center" onclick="next('s-appearance')" data-i18n="analytics.dont">Don’t Share</button>
+            <button class="link" onclick="next('s-appearance')" data-i18n="analytics.share">Share &amp; Continue</button>
+        </section>
+
+        <!-- SCREEN APPEARANCE -->
+        <section class="screen" id="s-appearance">
+            <h2 class="top-title" style="text-align:center" data-i18n="appearance.title">Choose Your<br>Look</h2>
+            <div class="appearance-wrap">
+                <div class="appearance light selected" onclick="pickLook(this)">
+                    <div class="preview"><div class="t">12</div></div>
+                    <div class="cap" data-i18n="appearance.light">Light</div>
+                </div>
+                <div class="appearance dark" onclick="pickLook(this)">
+                    <div class="preview"><div class="t">12</div></div>
+                    <div class="cap" data-i18n="appearance.dark">Dark</div>
+                </div>
+            </div>
+            <button class="btn" onclick="finishSetup()" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- WELCOME -->
+        <section class="screen welcome" id="s-welcome">
+            <img src="logo.png" alt="" class="logo-img">
+            <h1 data-i18n="welcome.title">Welcome to Aura</h1>
+            <p data-i18n="welcome.body">Your device is set up and ready to go. We hope you enjoy using AuraOS.</p>
+            <button class="btn" onclick="goRestart()" data-i18n="welcome.btn">Get Started</button>
+        </section>
+
+    </main>
+
+    <div class="join-overlay" id="joinOverlay">
+        <div class="join-card">
+            <div class="label" id="joinLabel">Joining “Aura-5G”</div>
+            <svg class="spinner-mini" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40">
+                    <animateTransform attributeName="transform" type="rotate" values="-90;810" keyTimes="0;1" dur="1.2s" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" values="0%;0%;-125.66%" calcMode="spline" keySplines="0.61,1,0.88,1;0.12,0,0.39,0" keyTimes="0;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dasharray" values="0% 251.32%;125.66% 125.66%;0% 251.32%" calcMode="spline" keySplines="0.61,1,0.88,1;0.12,0,0.39,0" keyTimes="0;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <div class="sub" id="joinSub">Connecting…</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+</div>
+
+<script>
+    const screens = Array.from(document.querySelectorAll('.screen'));
+    const statusbar = document.getElementById('statusbar');
+    const backbar = document.getElementById('backbar');
+    const phone = document.getElementById('phone');
+    /* i18n: applying the selected country's language */
+    const I18N = {
+        'en': {
+            'continue': 'Continue',
+            'country.title': 'Country or<br>Region',
+            'wifi.title': 'Wi-Fi Networks',
+            'wifi.body': 'Choose a network, or connect to PC or router directly.',
+            'wifi.other': 'Other…',
+            'wifi.joining': 'Joining “{0}”',
+            'wifi.connecting': 'Connecting…',
+            'wifi.connected': 'Connected',
+            'wifi.connected.toast': 'Connected to {0}',
+            'privacy.title': 'Data &amp; Privacy',
+            'privacy.body': 'It’s your data. You decide what to share and what not to share.<br><br>Everything processed on-device stays on-device.',
+            'privacy.continue': 'Continue &amp; Agree',
+            'faceid.name': 'Aura Face',
+            'faceid.title': 'Set Up Aura Face',
+            'faceid.body': 'Use Aura Face to securely unlock your Aura, make purchases, and sign in to apps.',
+            'faceid.main': 'Set Up Aura Face',
+            'faceid.later': 'Set Up Later',
+            'faceid.scanning': 'Scanning…',
+            'faceid.done': 'Done',
+            'faceid.enabled': 'Aura Face enabled',
+            'passcode.title': 'Create a<br>Passcode',
+            'passcode.hint': 'This passcode will be used to unlock your Aura.',
+            'passcode.rehint': 'Re-enter your passcode',
+            'passcode.ok': 'Passcode set',
+            'passcode.mismatch': 'Passcodes did not match. Try again.',
+            'customize.title': 'Customize Your Aura',
+            'customize.c1.title': 'Customize',
+            'customize.c1.desc': 'Set up appearance, widgets, and Focus as you like.',
+            'customize.c2.title': 'Transfer from Android',
+            'customize.c2.desc': 'Move apps, messages, and photos from your old device.',
+            'appsdata.title': 'Apps &amp; Data',
+            'appsdata.body': 'Choose your transfer method.',
+            'appsdata.r1': 'Move Data from Android',
+            'appsdata.r2': 'Restore from Aura Cloud Backup',
+            'appsdata.r3': 'Don’t Transfer Data',
+            'pay.title': 'Secure Enroll',
+            'pay.body': 'Add a card to <strong>Aura Pay</strong> for secure payments in stores and in apps.',
+            'pay.btn': 'Add Card Later',
+            'auraid.title': 'Sign In with<br>Your Aura ID',
+            'auraid.body': 'Your Aura ID is used for Messages, the App Store, Aura Music, and more.',
+            'auraid.pass': 'Password',
+            'auraid.skip': 'Don’t have an Aura ID? Create yours.',
+            'terms.title': 'Terms and<br>Conditions',
+            'terms.agree': 'Agree',
+            'express.title': 'Express Settings',
+            'express.body': 'These features set themselves up automatically. You can change them in Settings later.',
+            'express.msg': 'Messages',
+            'express.loc': 'Location Services',
+            'express.find': 'Find My Aura',
+            'express.st': 'Screen Time',
+            'analytics.title': 'Analytics &amp; Privacy',
+            'analytics.body': 'Help improve AuraOS by sharing widget usage, system analytics, and crash data with XPDevs. This won’t be associated with your identity.',
+            'analytics.dont': 'Don’t Share',
+            'analytics.share': 'Share &amp; Continue',
+            'appearance.title': 'Choose Your<br>Look',
+            'appearance.light': 'Light',
+            'appearance.dark': 'Dark',
+            'appearance.toast.light': 'Light appearance enabled',
+            'appearance.toast.dark': 'Dark appearance enabled',
+            'welcome.title': 'Welcome to Aura',
+            'welcome.body': 'Your device is set up and ready to go. We hope you enjoy using AuraOS.',
+            'welcome.btn': 'Get Started',
+            'hello.swipe': 'Swipe down to continue',
+            'toast.country.set': 'Set to {0}',
+            'toast.pick.light': 'Light',
+            'toast.pick.dark': 'Dark'
+        },
+        'zh-Hans': {
+            'continue': '继续',
+            'country.title': '国家或<br>地区',
+            'wifi.title': '无线局域网',
+            'wifi.body': '选取一个网络，或直接连接电脑或路由器。',
+            'wifi.other': '其他…',
+            'wifi.joining': '正在加入“{0}”',
+            'wifi.connecting': '正在连接…',
+            'wifi.connected': '已连接',
+            'wifi.connected.toast': '已连接到 {0}',
+            'privacy.title': '数据与隐私',
+            'privacy.body': '这是你的数据。决定分享哪些、不分享哪些都由你做主。所有在设备上处理的数据都会留在设备上。',
+            'privacy.continue': '继续并同意',
+            'faceid.name': 'Aura Face',
+            'faceid.title': '设置 Aura Face',
+            'faceid.body': '使用 Aura Face 安全解锁你的 Aura、进行购买并登录应用。',
+            'faceid.main': '设置 Aura Face',
+            'faceid.later': '稍后设置',
+            'faceid.scanning': '正在扫描…',
+            'faceid.done': '完成',
+            'faceid.enabled': '已启用 Aura Face',
+            'passcode.title': '创建<br>密码',
+            'passcode.hint': '此密码将用于解锁你的 Aura。',
+            'passcode.rehint': '重新输入密码',
+            'passcode.ok': '已设置密码',
+            'passcode.mismatch': '密码不一致，请重试。',
+            'customize.title': '自定你的 Aura',
+            'customize.c1.title': '自定',
+            'customize.c1.desc': '按你的喜好设置外观、小组件和专注模式。',
+            'customize.c2.title': '从安卓设备传输',
+            'customize.c2.desc': '从旧设备移动应用、信息和照片。',
+            'appsdata.title': '应用与数据',
+            'appsdata.body': '选择传输方法。',
+            'appsdata.r1': '从安卓设备移入数据',
+            'appsdata.r2': '从 Aura 云备份恢复',
+            'appsdata.r3': '不传输数据',
+            'pay.title': '安全注册',
+            'pay.body': '为 Aura Pay 添加卡片，即可在商店与应用中安全付款。',
+            'pay.btn': '稍后添加卡片',
+            'auraid.title': '使用你的<br>Aura ID 登录',
+            'auraid.body': '你的 Aura ID 用于“信息”、App Store、Aura Music 等。',
+            'auraid.pass': '密码',
+            'auraid.skip': '没有 Aura ID？现在创建。',
+            'terms.title': '条款与<br>条件',
+            'terms.agree': '同意',
+            'express.title': '快速设置',
+            'express.body': '这些功能会自动设置。你之后可在设置中更改。',
+            'express.msg': '信息',
+            'express.loc': '定位服务',
+            'express.find': '查找我的 Aura',
+            'express.st': '屏幕使用时间',
+            'analytics.title': '分析与隐私',
+            'analytics.body': '帮助改进 AuraOS：与 XPDevs 共享小组件使用情况、系统分析与崩溃数据。这些数据不会关联到你的身份。',
+            'analytics.dont': '不共享',
+            'analytics.share': '共享并继续',
+            'appearance.title': '选取你的<br>外观',
+            'appearance.light': '浅色',
+            'appearance.dark': '深色',
+            'appearance.toast.light': '已启用浅色外观',
+            'appearance.toast.dark': '已启用深色外观',
+            'welcome.title': '欢迎使用 Aura',
+            'welcome.body': '你的设备已设置完毕，随时可以使用。希望你喜欢 AuraOS。',
+            'welcome.btn': '开始使用',
+            'hello.swipe': '向下轻扫以继续',
+            'toast.country.set': '已设为 {0}',
+            'toast.pick.light': '浅色',
+            'toast.pick.dark': '深色'
+        },
+        'ja': {
+            'continue': '続ける',
+            'country.title': '国または<br>地域',
+            'wifi.title': 'Wi-Fiネットワーク',
+            'wifi.body': 'ネットワークを選択するか、PCまたはルーターに直接接続します。',
+            'wifi.other': 'その他…',
+            'wifi.joining': '“{0}”に接続中',
+            'wifi.connecting': '接続中…',
+            'wifi.connected': '接続済み',
+            'wifi.connected.toast': '{0} に接続しました',
+            'privacy.title': 'データとプライバシー',
+            'privacy.body': 'あなたのデータです。何を共有するか、何を共有しないかはあなたが決めます。デバイス上で処理されるデータは、デバイス上に留まります。',
+            'privacy.continue': '続けて同意する',
+            'faceid.name': 'Aura Face',
+            'faceid.title': 'Aura Face の設定',
+            'faceid.body': 'Aura Face で Aura のロック解除、購入、アプリへのサインインを安全に行えます。',
+            'faceid.main': 'Aura Face を設定',
+            'faceid.later': '後で設定',
+            'faceid.scanning': 'スキャン中…',
+            'faceid.done': '完了',
+            'faceid.enabled': 'Aura Face を有効にしました',
+            'passcode.title': 'パスコードを<br>作成',
+            'passcode.hint': 'このパスコードは、Aura のロック解除に使用されます。',
+            'passcode.rehint': 'パスコードを再入力',
+            'passcode.ok': 'パスコードを設定しました',
+            'passcode.mismatch': 'パスコードが一致しません。もう一度お試しください。',
+            'customize.title': 'Aura をカスタマイズ',
+            'customize.c1.title': 'カスタマイズ',
+            'customize.c1.desc': '外観、ウィジェット、集中モードをお好みで設定できます。',
+            'customize.c2.title': 'Android から移行',
+            'customize.c2.desc': '以前のデバイスからアプリ、メッセージ、写真を移行します。',
+            'appsdata.title': 'App とデータ',
+            'appsdata.body': '移行方法を選択してください。',
+            'appsdata.r1': 'Android からデータを移行',
+            'appsdata.r2': 'Aura Cloud バックアップから復元',
+            'appsdata.r3': 'データを転送しない',
+            'pay.title': '安全な登録',
+            'pay.body': 'Aura Pay にカードを追加すると、店舗やアプリで安全に支払えます。',
+            'pay.btn': 'カードは後で追加',
+            'auraid.title': 'Aura ID で<br>サインイン',
+            'auraid.body': 'Aura ID は、メッセージ、App Store、Aura Music などに使用されます。',
+            'auraid.pass': 'パスワード',
+            'auraid.skip': 'Aura ID をお持ちでない場合は作成してください。',
+            'terms.title': '規約と<br>条件',
+            'terms.agree': '同意',
+            'express.title': 'クイック設定',
+            'express.body': 'これらの機能は自動的に設定されます。後で設定から変更できます。',
+            'express.msg': 'メッセージ',
+            'express.loc': '位置情報サービス',
+            'express.find': 'Aura を探す',
+            'express.st': 'スクリーンタイム',
+            'analytics.title': '分析とプライバシー',
+            'analytics.body': 'ウィジェットの使用状況、システム分析、クラッシュデータを XPDevs と共有して AuraOS の改善に役立てます。これはあなたの身元とは関連付けられません。',
+            'analytics.dont': '共有しない',
+            'analytics.share': '共有して続ける',
+            'appearance.title': '外観を選択',
+            'appearance.light': 'ライト',
+            'appearance.dark': 'ダーク',
+            'appearance.toast.light': 'ライトの外観を有効にしました',
+            'appearance.toast.dark': 'ダークの外観を有効にしました',
+            'welcome.title': 'Aura へようこそ',
+            'welcome.body': 'デバイスの設定が完了しました。AuraOS をお楽しみください。',
+            'welcome.btn': 'はじめる',
+            'hello.swipe': '下にスワイプして続ける',
+            'toast.country.set': '{0} に設定しました',
+            'toast.pick.light': 'ライト',
+            'toast.pick.dark': 'ダーク'
+        }
+    };
+    let curLang = 'en';
+    function t(key, val) {
+        const dict = I18N[curLang] || I18N['en'];
+        let s = dict[key] !== undefined ? dict[key] : (I18N['en'][key] !== undefined ? I18N['en'][key] : key);
+        if (val !== undefined) s = s.replace('{0}', val);
+        return s;
+    }
+    function applyLang(lang) {
+        curLang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.innerHTML = t(el.getAttribute('data-i18n'));
+        });
+        const passPlaceholder = document.getElementById('auraid-pass');
+        if (passPlaceholder) passPlaceholder.placeholder = t('auraid.pass');
+        const emInput = document.getElementById('auraid-email');
+        if (emInput) emInput.placeholder = 'name@auraos.app';
+    }
+
+    let hist = [];
+
+    function show(id) {
+        screens.forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        const isHello = id === 's-hello';
+        statusbar.style.opacity = isHello ? '0' : '1';
+        statusbar.style.color = phone.classList.contains('dark') ? '#fff' : '#000';
+        statusbar.style.transition = 'opacity 0.4s';
+        backbar.classList.toggle('show', hist.length > 0);
+        window.scrollTo(0, 0);
+    }
+
+    function next(id) {
+        hist.push(currentId());
+        show(id);
+    }
+    function goPrev() {
+        if (!hist.length) return;
+        const target = hist.pop();
+        show(target);
+        if (target === 's-wifi') document.getElementById('wifi-continue').disabled = true;
+    }
+    function currentId() {
+        const a = document.querySelector('.screen.active');
+        return a ? a.id : '';
+    }
+
+    function pick(row, lang) {
+        row.parentElement.querySelectorAll('.row').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+        applyLang(lang);
+        showToast(t('toast.country.set', row.textContent));
+    }
+    function pickRow(row) {
+        row.parentElement.querySelectorAll('.row').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+    }
+    function pickCard(c) {
+        c.parentElement.querySelectorAll('.card').forEach(x => x.classList.remove('selected'));
+        c.classList.add('selected');
+    }
+    function pickLook(x) {
+        x.parentElement.querySelectorAll('.appearance').forEach(a => a.classList.remove('selected'));
+        x.classList.add('selected');
+        const dark = x.classList.contains('dark');
+        phone.classList.toggle('dark', dark);
+        statusbar.style.color = dark ? '#fff' : '#000';
+        showToast(dark ? t('appearance.toast.dark') : t('appearance.toast.light'));
+    }
+    function toggle(sw) { sw.classList.toggle('on'); }
+
+    let toastTimer;
+    function showToast(msg) {
+        const tEl = document.getElementById('toast');
+        tEl.textContent = msg;
+        tEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => tEl.classList.remove('show'), 1600);
+    }
+
+    /* wifi */
+    let joined = false;
+    function joinWifi(row) {
+        if (joined) return;
+        const name = row.textContent;
+        document.getElementById('joinLabel').textContent = t('wifi.joining', name);
+        document.getElementById('joinOverlay').classList.add('show');
+        document.getElementById('joinSub').textContent = t('wifi.connecting');
+        setTimeout(() => {
+            document.getElementById('joinSub').textContent = t('wifi.connected');
+            showToast(t('wifi.connected.toast', name));
+            setTimeout(() => {
+                document.getElementById('joinOverlay').classList.remove('show');
+                joined = true;
+                document.getElementById('wifi-continue').disabled = false;
+            }, 500);
+        }, 1800);
+    }
+
+    /* face id */
+    function startFaceScan() {
+        const ring = document.querySelector('#s-faceid .face-ring');
+        const btn = document.getElementById('faceid-main');
+        btn.textContent = t('faceid.scanning');
+        btn.disabled = true;
+        ring.style.animation = 'none';
+        let deg = 0;
+        const scan = setInterval(() => {
+            deg = (deg + 3) % 360;
+            ring.style.borderColor = 'transparent';
+            ring.style.borderTopColor = '#007AFF';
+            ring.style.transform = 'rotate(' + deg + 'deg)';
+        }, 16);
+        setTimeout(() => {
+            clearInterval(scan);
+            ring.style.transform = 'rotate(0deg)';
+            ring.style.borderColor = '#34C759';
+            ring.style.borderTopColor = '#34C759';
+            btn.textContent = t('faceid.done');
+            showToast(t('faceid.enabled'));
+            setTimeout(() => next('s-passcode'), 800);
+        }, 2200);
+    }
+
+    /* passcode */
+    const PASS_LEN = 4;
+    let passcode = [];
+    let confirming = false;
+    let confirmSaved = [];
+    function buildKeypad() {
+        const kp = document.getElementById('keypad');
+        kp.innerHTML = '';
+        const pid = document.getElementById('pincode');
+        pid.innerHTML = '';
+        for (let i = 0; i < PASS_LEN; i++) pid.appendChild(document.createElement('span'));
+        for (let i = 1; i <= 9; i++) {
+            const b = document.createElement('button');
+            b.className = 'key'; b.textContent = i;
+            b.onclick = () => press(i);
+            kp.appendChild(b);
+        }
+        const del = document.createElement('button');
+        del.className = 'key'; del.textContent = '⌫'; del.style.backgroundColor = 'transparent';
+        del.onclick = () => { passcode.pop(); renderDots(); };
+        kp.appendChild(del);
+        const zero = document.createElement('button');
+        zero.className = 'key'; zero.textContent = 0;
+        zero.onclick = () => press(0);
+        kp.appendChild(zero);
+        const blank = document.createElement('button');
+        blank.className = 'key'; blank.style.backgroundColor = 'transparent'; blank.disabled = true;
+        kp.appendChild(blank);
+    }
+    function press(n) {
+        passcode.push(n);
+        renderDots();
+        if (passcode.length === PASS_LEN) {
+            if (!confirming) {
+                confirmSaved = [...passcode];
+                confirming = true;
+                passcode = [];
+                document.getElementById('pass-hint').textContent = t('passcode.rehint');
+                renderDots();
+            } else {
+                setTimeout(() => {
+                    if (arraysEqual(confirmSaved, passcode)) {
+                        showToast(t('passcode.ok'));
+                        resetPass();
+                        setTimeout(() => next('s-customize'), 600);
+                    } else {
+                        showToast(t('passcode.mismatch'));
+                        resetPass();
+                    }
+                }, 250);
+            }
+        }
+    }
+    function resetPass() {
+        passcode = [];
+        confirming = false;
+        confirmSaved = [];
+        document.getElementById('pass-hint').textContent = t('passcode.hint');
+        renderDots();
+    }
+    function arraysEqual(a, b) { return a.length === b.length && a.every((v, i) => v === b[i]); }
+    function renderDots() {
+        const spans = document.getElementById('pincode').querySelectorAll('span');
+        spans.forEach((s, i) => s.classList.toggle('filled', i < passcode.length));
+    }
+
+    /* aura id */
+    function checkAuraId() {
+        const e = document.getElementById('auraid-email').value.trim();
+        const p = document.getElementById('auraid-pass').value;
+        document.getElementById('auraid-btn').disabled = !(e.length > 3 && p.length > 0);
+    }
+
+    /* finish */
+    function finishSetup() {
+        next('s-welcome');
+    }
+    function goRestart() {
+        window.location.href = '../power/restart.html';
+    }
+
+    /* clock */
+    function updateClock() {
+        const now = new Date();
+        const h = now.getHours(), m = now.getMinutes();
+        const tStr = (h % 12 || 12) + ':' + String(m).padStart(2, '0');
+        document.getElementById('time').textContent = tStr;
+    }
+
+    /* network indicators, reflect reality */
+    function updateStatusIcons() {
+        const online = navigator.onLine;
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const wifiIcon = document.querySelector('.icon-wifi');
+        const cellType = document.getElementById('cellType');
+        const rects = document.querySelectorAll('.icon-signal rect');
+        let bars = 4;
+        let showWifi = true;
+
+        if (!online) {
+            bars = 0;
+            showWifi = false;
+            if (cellType) cellType.style.display = 'none';
+        } else if (conn) {
+            const type = (conn.type || 'unknown').toLowerCase();
+            const eff = (conn.effectiveType || '4g').toLowerCase();
+            if (type === 'cellular') {
+                showWifi = false;
+                if (cellType) {
+                    cellType.textContent = (eff === '3g') ? '3G' : (eff === '2g' || eff === 'slow-2g') ? '2G' : 'LTE';
+                    cellType.style.display = '';
+                }
+                bars = (eff === 'slow-2g' || eff === '2g') ? 1 : (eff === '3g' ? 3 : 4);
+            } else {
+                if (cellType) cellType.style.display = 'none';
+                bars = (eff === 'slow-2g' || eff === '2g') ? 1 : (eff === '3g' ? 3 : 4);
+            }
+        }
+
+        wifiIcon.style.display = showWifi ? '' : 'none';
+        rects.forEach((r, i) => r.classList.toggle('off', i >= bars));
+    }
+
+    /* hello: rotating greetings + swipe to continue */
+    const GREETINGS = [
+        { t: 'Hello', l: 'English' },
+        { t: 'Hallo', l: 'Deutsch' },
+        { t: 'Bonjour', l: 'Français' },
+        { t: 'Hola', l: 'Español' },
+        { t: 'Ciao', l: 'Italiano' },
+        { t: 'Olá', l: 'Português' },
+        { t: 'こんにちは', l: '日本語' },
+        { t: '안녕하세요', l: '한국어' },
+        { t: '你好', l: '中文 (简体)' },
+        { t: 'مرحباً', l: 'العربية' },
+        { t: 'Привет', l: 'Русский' },
+        { t: 'Xin chào', l: 'Tiếng Việt' },
+        { t: 'Γεια σας', l: 'Ελληνικά' }
+    ];
+    let greetTimer = null;
+    let helloDone = false;
+    let gi = 0;
+
+    function fitGreeting(el) {
+        const maxWidth = Math.min(360, el.parentElement.clientWidth - 40);
+        el.style.fontSize = '82px';
+        while (el.scrollWidth > maxWidth && el.style.fontSize !== '32px') {
+            el.style.fontSize = (parseInt(el.style.fontSize, 10) - 4) + 'px';
+        }
+    }
+    function showGreeting(index) {
+        const greet = document.getElementById('greet');
+        const lang = document.getElementById('greetLang');
+        greet.textContent = GREETINGS[index].t;
+        lang.textContent = GREETINGS[index].l;
+        fitGreeting(greet);
+    }
+    function startGreetings() {
+        const greet = document.getElementById('greet');
+        showGreeting(0);
+        greetTimer = setInterval(() => {
+            greet.classList.add('fading');
+            setTimeout(() => {
+                gi = (gi + 1) % GREETINGS.length;
+                showGreeting(gi);
+                greet.classList.remove('fading');
+            }, 800);
+        }, 2400);
+    }
+
+    function continueFromHello() {
+        if (helloDone) return;
+        helloDone = true;
+        clearInterval(greetTimer);
+        const hello = document.getElementById('s-hello');
+        hello.classList.add('swiping');
+        hello.style.animation = 'swipeExit 0.4s ease forwards';
+        setTimeout(() => {
+            hello.style.animation = '';
+            hello.classList.remove('swiping');
+            next('s-country');
+        }, 380);
+    }
+
+    let swipeYStart = null;
+    function bindHelloSwipe() {
+        const hello = document.getElementById('s-hello');
+        hello.addEventListener('pointerdown', e => { swipeYStart = e.clientY; });
+        hello.addEventListener('pointermove', e => {
+            if (swipeYStart !== null && e.clientY - swipeYStart > 60) {
+                swipeYStart = null;
+                continueFromHello();
+            }
+        });
+        hello.addEventListener('pointerup', () => { swipeYStart = null; });
+        hello.addEventListener('pointercancel', () => { swipeYStart = null; });
+        hello.addEventListener('click', e => {
+            if (e.target.closest('.swipe-hint') && !helloDone) continueFromHello();
+        });
+    }
+
+    /* boot sequence */
+    function start() {
+        applyLang('en');
+        buildKeypad();
+        updateClock();
+        updateStatusIcons();
+        show('s-hello');
+        startGreetings();
+        bindHelloSwipe();
+        setTimeout(continueFromHello, 30000);
+    }
+
+    document.addEventListener('DOMContentLoaded', start);
+    setInterval(updateClock, 1000);
+    setInterval(updateStatusIcons, 1000);
+    window.addEventListener('online', updateStatusIcons);
+    window.addEventListener('offline', updateStatusIcons);
+    if (navigator.connection) navigator.connection.addEventListener('change', updateStatusIcons);
+</script>
+</body>
+</html>
