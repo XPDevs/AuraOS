@@ -517,7 +517,7 @@
             <h2 class="top-title" data-i18n="region.title">Country or Region</h2>
             <p class="body-text" data-i18n="region.body">Select your country or region to set the date, time, currency, measurements and legal requirements used on your device.</p>
             <div class="list" id="regionList">
-                <div class="row selected"><span>Australia</span><span class="check">✓</span></div>
+                <div class="row selected"><span>United Kingdom</span><span class="check">✓</span></div>
             </div>
             <p class="body-text" id="regionVariant" style="text-align:center;margin-top:14px"></p>
             <button class="btn" id="region-continue" onclick="next('s-sim')" data-i18n="continue">Continue</button>
@@ -2221,11 +2221,11 @@
     /* region */
     const REGIONS = {
         en: [
+            { name: 'United Kingdom', variant: 'en-GB' },
             { name: 'Australia', variant: 'en-AU' },
             { name: 'Canada', variant: 'en-CA' },
             { name: 'Ireland', variant: 'en-IE' },
             { name: 'New Zealand', variant: 'en-NZ' },
-            { name: 'United Kingdom', variant: 'en-GB' },
             { name: 'United States', variant: 'en-US' }
         ],
         de: [
@@ -2307,7 +2307,7 @@
     };
     const LANG_LABEL = { en: 'English', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano', pt: 'Português', ja: '日本語', ko: '한국어', 'zh-Hans': '中文 (简体)', ar: 'العربية', ru: 'Русский', vi: 'Tiếng Việt', el: 'Ελληνικά' };
     const HOURS12 = ['en-US', 'en-CA', 'en-AU', 'en-NZ'];
-    let curVariant = 'en-US';
+    let curVariant = 'en-GB';
     let currentRegion = REGIONS.en[0];
     function enterRegion() {
         const list = document.getElementById('regionList');
@@ -2713,6 +2713,7 @@
     function continueFromHello() {
         if (helloDone) return;
         helloDone = true;
+        applyLang('en', 'en-GB');
         if (greetTimer) { clearInterval(greetTimer); greetTimer = null; }
         if (helloAutoTimer) { clearTimeout(helloAutoTimer); helloAutoTimer = null; }
         const hello = document.getElementById('s-hello');
