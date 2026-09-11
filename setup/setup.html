@@ -327,6 +327,7 @@
         cursor: pointer;
     }
     .key:hover { filter: brightness(0.92); }
+    .key.emergency { font-size: 13px; color: #007AFF; filter: none; }
 
     /* customize cards */
     .cards { display: flex; gap: 12px; margin-bottom: 30px; }
@@ -500,7 +501,15 @@
                 <div class="row" data-lang="vi" onclick="pickLang(this)"><span>Tiếng Việt</span><span class="check">✓</span></div>
                 <div class="row" data-lang="el" onclick="pickLang(this)"><span>Ελληνικά</span><span class="check">✓</span></div>
             </div>
-            <button class="btn" onclick="next('s-region')" data-i18n="continue">Continue</button>
+            <button class="btn" onclick="next('s-accessibility')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- ACCESSIBILITY -->
+        <section class="screen" id="s-accessibility">
+            <h2 class="top-title" data-i18n="acc.title">Accessibility</h2>
+            <p class="body-text" data-i18n="acc.body">If you have difficulty seeing, hearing, or moving, AuraOS has built-in features to help. Would you like to set up accessibility features now?</p>
+            <button class="btn" onclick="accNow()" data-i18n="acc.now">Set Up Now</button>
+            <button class="link" onclick="next('s-region')" data-i18n="acc.later">Set Up Later</button>
         </section>
 
         <!-- REGION -->
@@ -511,7 +520,21 @@
                 <div class="row selected"><span>Australia</span><span class="check">✓</span></div>
             </div>
             <p class="body-text" id="regionVariant" style="text-align:center;margin-top:14px"></p>
-            <button class="btn" id="region-continue" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
+            <button class="btn" id="region-continue" onclick="next('s-sim')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- SIM -->
+        <section class="screen" id="s-sim">
+            <div class="data-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M9 3v4a2 2 0 0 1-2 2H3"/>
+                    <path d="M8 12h8M8 16h5"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="sim.title">No SIM Card</h2>
+            <p class="body-text" style="text-align:center" data-i18n="sim.body">No SIM card detected. Please insert your SIM card to continue, or connect to Wi-Fi to set up an eSIM.</p>
+            <button class="btn center" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
         </section>
 
         <!-- WIFI -->
@@ -524,9 +547,18 @@
                 <div class="row" onclick="joinWifi(this)"><span>HomeNet <span class="wi-fi-icon strength-2"></span></span></div>
                 <div class="row" onclick="joinWifi(this)"><span>FreeCoffee_WiFi <span class="wi-fi-icon strength-2"></span></span></div>
                 <div class="row" onclick="joinWifi(this)"><span>Vodafone-D3B9 <span class="wi-fi-icon strength-4"></span></span></div>
-                <div class="row subtle" onclick="next('s-privacy')" data-i18n="wifi.other"><span>Other…</span></div>
+                <div class="row subtle" onclick="next('s-esim')" data-i18n="wifi.other"><span>Other…</span></div>
             </div>
-            <button class="btn" id="wifi-continue" disabled onclick="next('s-privacy')" data-i18n="continue">Continue</button>
+            <button class="btn" id="wifi-continue" disabled onclick="next('s-esim')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- ESIM -->
+        <section class="screen" id="s-esim">
+            <h2 class="top-title" data-i18n="esim.title">Activate Mobile Plan</h2>
+            <p class="body-text" data-i18n="esim.body">Set up your mobile plan. Scan a QR code from your carrier or transfer a plan from your old phone.</p>
+            <button class="btn" onclick="next('s-privacy')" data-i18n="esim.qr">Scan QR Code</button>
+            <button class="link" onclick="next('s-privacy')" data-i18n="esim.transfer">Transfer from Old Phone</button>
+            <button class="link" onclick="next('s-privacy')" data-i18n="esim.later">Set Up Later</button>
         </section>
 
         <!-- DATA & PRIVACY -->
@@ -796,6 +828,20 @@
     /* i18n: applying the selected country's language */
     const I18N = {
         'en': {
+            'acc.title': 'Accessibility',
+            'acc.body': 'If you have difficulty seeing, hearing, or moving, AuraOS has built-in features to help. Would you like to set up accessibility features now?',
+            'acc.now': 'Set Up Now',
+            'acc.later': 'Set Up Later',
+            'acc.done': 'Screen Reader is now available. You can change accessibility features in Settings at any time.',
+            'sim.title': 'No SIM Card',
+            'sim.body': 'No SIM card detected. Please insert your SIM card to continue, or connect to Wi-Fi to set up an eSIM.',
+            'esim.title': 'Activate Mobile Plan',
+            'esim.body': 'Set up your mobile plan. Scan a QR code from your carrier or transfer a plan from your old phone.',
+            'esim.qr': 'Scan QR Code',
+            'esim.transfer': 'Transfer from Old Phone',
+            'esim.later': 'Set Up Later',
+            'passcode.emergency': 'Emergency',
+            'passcode.emergency.call': 'Calling {0}…',
             'region.title': 'Country or Region',
             'region.body': 'Select your country or region to set the date, time, currency, measurements and legal requirements used on your device.',
             'toast.region.set': 'Set to {0}',
@@ -883,6 +929,20 @@
             'move.restore.skip': 'Skip for Now, Sign In Later',
         },
         'de': {
+            'acc.title': 'Bedienungshilfen',
+            'acc.body': 'Wenn Sie Schwierigkeiten beim Sehen, Hören oder Bewegen haben, bietet AuraOS integrierte Funktionen zur Unterstützung. Möchten Sie jetzt Bedienungshilfen einrichten?',
+            'acc.now': 'Jetzt einrichten',
+            'acc.later': 'Später einrichten',
+            'acc.done': 'Die Sprachausgabe ist jetzt verfügbar. Sie können Bedienungshilfen jederzeit in den Einstellungen ändern.',
+            'sim.title': 'Keine SIM-Karte',
+            'sim.body': 'Keine SIM-Karte erkannt. Bitte legen Sie eine SIM-Karte ein, um fortzufahren, oder verbinden Sie sich mit Wi-Fi, um eine eSIM einzurichten.',
+            'esim.title': 'Mobilfunktarif aktivieren',
+            'esim.body': 'Richten Sie Ihren Mobilfunktarif ein. Scannen Sie einen QR-Code Ihres Anbieters oder übertragen Sie einen Tarif von Ihrem alten Telefon.',
+            'esim.qr': 'QR-Code scannen',
+            'esim.transfer': 'Von altem Telefon übertragen',
+            'esim.later': 'Später einrichten',
+            'passcode.emergency': 'Notruf',
+            'passcode.emergency.call': 'Notruf {0} wird gewählt…',
             'region.title': 'Land oder Region',
             'region.body': 'Wähle dein Land oder deine Region, um Datum, Uhrzeit, Währung, Maßeinheiten und gesetzliche Anforderungen für dein Gerät festzulegen.',
             'toast.region.set': 'Auf {0} eingestellt',
@@ -970,6 +1030,20 @@
             'move.restore.skip': 'Später anmelden und jetzt überspringen',
         },
         'fr': {
+            'acc.title': 'Accessibilité',
+            'acc.body': 'Si vous avez des difficultés à voir, entendre ou vous déplacer, AuraOS dispose de fonctions intégrées pour vous aider. Souhaitez-vous configurer les fonctions d’accessibilité maintenant ?',
+            'acc.now': 'Configurer maintenant',
+            'acc.later': 'Configurer plus tard',
+            'acc.done': 'La synthèse vocale est désormais disponible. Vous pouvez modifier les fonctions d’accessibilité dans Réglages à tout moment.',
+            'sim.title': 'Aucune carte SIM',
+            'sim.body': 'Aucune carte SIM détectée. Insérez votre carte SIM pour continuer, ou connectez-vous au Wi-Fi pour configurer une eSIM.',
+            'esim.title': 'Activer le forfait mobile',
+            'esim.body': 'Configurez votre forfait mobile. Scannez un code QR de votre opérateur ou transférez un forfait depuis votre ancien téléphone.',
+            'esim.qr': 'Scanner un code QR',
+            'esim.transfer': 'Transférer depuis un ancien téléphone',
+            'esim.later': 'Configurer plus tard',
+            'passcode.emergency': 'Urgence',
+            'passcode.emergency.call': 'Appel de {0}…',
             'region.title': 'Pays ou région',
             'region.body': 'Sélectionnez votre pays ou région pour définir la date, l’heure, la devise, les unités de mesure et les exigences légales de votre appareil.',
             'toast.region.set': 'Réglé sur {0}',
@@ -1057,6 +1131,20 @@
             'move.restore.skip': 'Ignorer pour l’instant, se connecter plus tard',
         },
         'es': {
+            'acc.title': 'Accesibilidad',
+            'acc.body': 'Si tiene dificultades para ver, oír o moverse, AuraOS incluye funciones integradas para ayudarle. ¿Desea configurar las funciones de accesibilidad ahora?',
+            'acc.now': 'Configurar ahora',
+            'acc.later': 'Configurar más tarde',
+            'acc.done': 'El lector de pantalla ya está disponible. Puede cambiar las funciones de accesibilidad en Ajustes en cualquier momento.',
+            'sim.title': 'Sin tarjeta SIM',
+            'sim.body': 'No se detectó ninguna tarjeta SIM. Inserte su tarjeta SIM para continuar o conéctese al Wi-Fi para configurar una eSIM.',
+            'esim.title': 'Activar plan móvil',
+            'esim.body': 'Configure su plan móvil. Escanee un código QR de su operador o transfiera un plan desde su teléfono anterior.',
+            'esim.qr': 'Escanear código QR',
+            'esim.transfer': 'Transferir desde el teléfono anterior',
+            'esim.later': 'Configurar más tarde',
+            'passcode.emergency': 'Emergencia',
+            'passcode.emergency.call': 'Llamando al {0}…',
             'region.title': 'País o región',
             'region.body': 'Selecciona tu país o región para configurar la fecha, la hora, la moneda, las unidades de medida y los requisitos legales de tu dispositivo.',
             'toast.region.set': 'Configurado en {0}',
@@ -1144,6 +1232,20 @@
             'move.restore.skip': 'Omitir por ahora, iniciar sesión más tarde',
         },
         'it': {
+            'acc.title': 'Accessibilità',
+            'acc.body': 'Se hai difficoltà a vedere, sentire o muoverti, AuraOS dispone di funzioni integrate per aiutarti. Vuoi configurare le funzioni di accessibilità ora?',
+            'acc.now': 'Configura ora',
+            'acc.later': 'Configura più tardi',
+            'acc.done': 'Il lettore dello schermo è ora disponibile. Puoi modificare le funzioni di accessibilità nelle Impostazioni in qualsiasi momento.',
+            'sim.title': 'Nessuna scheda SIM',
+            'sim.body': 'Nessuna scheda SIM rilevata. Inserisci la scheda SIM per continuare oppure connettiti al Wi-Fi per configurare una eSIM.',
+            'esim.title': 'Attiva piano mobile',
+            'esim.body': 'Configura il tuo piano mobile. Scansiona un codice QR del tuo operatore o trasferisci un piano dal tuo vecchio telefono.',
+            'esim.qr': 'Scansiona codice QR',
+            'esim.transfer': 'Trasferisci dal vecchio telefono',
+            'esim.later': 'Configura più tardi',
+            'passcode.emergency': 'Emergenza',
+            'passcode.emergency.call': 'Chiamata a {0}…',
             'region.title': 'Paese o regione',
             'region.body': 'Seleziona il tuo paese o regione per impostare data, ora, valuta, unità di misura e requisiti legali del dispositivo.',
             'toast.region.set': 'Impostato su {0}',
@@ -1231,6 +1333,20 @@
             'move.restore.skip': 'Salta per ora, accedi più tardi',
         },
         'pt': {
+            'acc.title': 'Acessibilidade',
+            'acc.body': 'Se tiver dificuldade em ver, ouvir ou mover-se, o AuraOS dispõe de funções integradas para ajudar. Deseja configurar as funções de acessibilidade agora?',
+            'acc.now': 'Configurar agora',
+            'acc.later': 'Configurar mais tarde',
+            'acc.done': 'O leitor de ecrã está agora disponível. Pode alterar as funções de acessibilidade em Definições em qualquer altura.',
+            'sim.title': 'Sem cartão SIM',
+            'sim.body': 'Nenhum cartão SIM detetado. Insira o seu cartão SIM para continuar ou ligue-se ao Wi-Fi para configurar um eSIM.',
+            'esim.title': 'Ativar plano móvel',
+            'esim.body': 'Configure o seu plano móvel. Digitalize um código QR do seu operador ou transfira um plano do seu telemóvel antigo.',
+            'esim.qr': 'Digitalizar código QR',
+            'esim.transfer': 'Transferir do telemóvel antigo',
+            'esim.later': 'Configurar mais tarde',
+            'passcode.emergency': 'Emergência',
+            'passcode.emergency.call': 'A ligar para {0}…',
             'region.title': 'País ou região',
             'region.body': 'Selecione seu país ou região para definir data, hora, moeda, unidades de medida e requisitos legais do dispositivo.',
             'toast.region.set': 'Definido para {0}',
@@ -1318,6 +1434,20 @@
             'move.restore.skip': 'Pular por agora, entrar depois',
         },
         'ja': {
+            'acc.title': 'アクセシビリティ',
+            'acc.body': '見る、聞く、動くことに困難があっても、AuraOS には支援するための機能が組み込まれています。今アクセシビリティ機能を設定しますか？',
+            'acc.now': '今すぐ設定',
+            'acc.later': '後で設定',
+            'acc.done': '画面読み上げが利用できます。設定はいつでも「設定」で変更できます。',
+            'sim.title': 'SIMカードなし',
+            'sim.body': 'SIMカードが検出されませんでした。続行するには SIMカードを挿入するか、Wi-Fi に接続して eSIM を設定してください。',
+            'esim.title': 'モバイルプランをアクティブ化',
+            'esim.body': 'モバイルプランを設定します。通信事業者の QRコード をスキャンするか、以前のスマートフォンからプランを移行してください。',
+            'esim.qr': 'QRコードをスキャン',
+            'esim.transfer': '以前のスマートフォンから移行',
+            'esim.later': '後で設定',
+            'passcode.emergency': '緊急',
+            'passcode.emergency.call': '{0} に発信中…',
             'region.title': '国または地域',
             'region.body': '国または地域を選択すると、端末の日付、時刻、通貨、測定単位、法的要件が設定されます。',
             'toast.region.set': '{0} に設定しました',
@@ -1405,6 +1535,20 @@
             'move.restore.skip': 'しばらくスキップして、後でサインイン',
         },
         'ko': {
+            'acc.title': '손쉬운 사용',
+            'acc.body': '보기, 듣기, 움직임에 어려움이 있어도 AuraOS에는 도움이 되는 기능이 내장되어 있습니다. 지금 손쉬운 사용 기능을 설정하시겠습니까?',
+            'acc.now': '지금 설정',
+            'acc.later': '나중에 설정',
+            'acc.done': '화면 읽기가 이제 사용할 수 있습니다. 손쉬운 사용 기능은 설정에서 언제든지 변경할 수 있습니다.',
+            'sim.title': 'SIM 카드 없음',
+            'sim.body': 'SIM 카드가 감지되지 않았습니다. 계속하려면 SIM 카드를 삽입하거나 Wi-Fi에 연결하여 eSIM을 설정하세요.',
+            'esim.title': '모바일 요금제 활성화',
+            'esim.body': '모바일 요금제를 설정합니다. 통신사의 QR 코드를 스캔하거나 이전 휴대전화에서 요금제를 전송하세요.',
+            'esim.qr': 'QR 코드 스캔',
+            'esim.transfer': '이전 휴대전화에서 전송',
+            'esim.later': '나중에 설정',
+            'passcode.emergency': '긴급',
+            'passcode.emergency.call': '{0}에 전화 중…',
             'region.title': '국가 또는 지역',
             'region.body': '국가 또는 지역을 선택하면 기기의 날짜, 시간, 통화, 측정 단위 및 법적 요구 사항이 설정됩니다.',
             'toast.region.set': '{0}(으)로 설정됨',
@@ -1492,6 +1636,20 @@
             'move.restore.skip': '지금 건너뛰고 나중에 로그인',
         },
         'zh-Hans': {
+            'acc.title': '辅助功能',
+            'acc.body': '如果您在看、听或移动方面有困难，AuraOS 内置了帮助功能。是否现在设置辅助功能？',
+            'acc.now': '立即设置',
+            'acc.later': '稍后设置',
+            'acc.done': '屏幕朗读现已可用。您可以随时在“设置”中更改辅助功能。',
+            'sim.title': '无 SIM 卡',
+            'sim.body': '未检测到 SIM 卡。请插入 SIM 卡以继续，或连接 Wi-Fi 以设置 eSIM。',
+            'esim.title': '激活移动套餐',
+            'esim.body': '设置您的移动套餐。扫描运营商提供的二维码，或从旧手机转移套餐。',
+            'esim.qr': '扫描二维码',
+            'esim.transfer': '从旧手机转移',
+            'esim.later': '稍后设置',
+            'passcode.emergency': '紧急呼叫',
+            'passcode.emergency.call': '正在呼叫 {0}…',
             'region.title': '国家或地区',
             'region.body': '选择你的国家或地区，以设置设备使用的日期、时间、货币、计量单位及法律要求。',
             'toast.region.set': '已设为 {0}',
@@ -1579,6 +1737,20 @@
             'move.restore.skip': '暂时跳过，稍后登录',
         },
         'ar': {
+            'acc.title': 'إمكانية الوصول',
+            'acc.body': 'إذا كنت تواجه صعوبة في الرؤية أو السمع أو الحركة، فلدى AuraOS ميزات مدمجة للمساعدة. هل تريد إعداد ميزات إمكانية الوصول الآن؟',
+            'acc.now': 'الإعداد الآن',
+            'acc.later': 'الإعداد لاحقًا',
+            'acc.done': 'قارئ الشاشة متوفر الآن. يمكنك تغيير ميزات إمكانية الوصول في الإعدادات في أي وقت.',
+            'sim.title': 'لا توجد بطاقة SIM',
+            'sim.body': 'لم يتم اكتشاف بطاقة SIM. يرجى إدخال بطاقة SIM للمتابعة، أو الاتصال بشبكة Wi-Fi لإعداد شريحة eSIM.',
+            'esim.title': 'تفعيل باقة الجوال',
+            'esim.body': 'قم بإعداد باقة الجوال. امسح رمز QR من مشغّل الشبكة أو انقل باقة من هاتفك القديم.',
+            'esim.qr': 'مسح رمز QR',
+            'esim.transfer': 'نقل من هاتف قديم',
+            'esim.later': 'الإعداد لاحقًا',
+            'passcode.emergency': 'طوارئ',
+            'passcode.emergency.call': 'جارٍ الاتصال بـ {0}…',
             'region.title': 'البلد أو المنطقة',
             'region.body': 'حدد بلدك أو منطقتك لضبط التاريخ والوقت والعملة ووحدات القياس والمتطلبات القانونية على جهازك.',
             'toast.region.set': 'تم التعيين على {0}',
@@ -1666,6 +1838,20 @@
             'move.restore.skip': 'تخطي الآن، تسجيل الدخول لاحقًا',
         },
         'ru': {
+            'acc.title': 'Специальные возможности',
+            'acc.body': 'Если вам трудно видеть, слышать или двигаться, в AuraOS есть встроенные функции помощи. Хотите настроить специальные возможности сейчас?',
+            'acc.now': 'Настроить сейчас',
+            'acc.later': 'Настроить позже',
+            'acc.done': 'Чтение экрана теперь доступно. Вы можете изменить специальные возможности в «Настройках» в любое время.',
+            'sim.title': 'Нет SIM-карты',
+            'sim.body': 'SIM-карта не обнаружена. Вставьте SIM-карту, чтобы продолжить, или подключитесь к Wi-Fi для настройки eSIM.',
+            'esim.title': 'Активация мобильного тарифа',
+            'esim.body': 'Настройте мобильный тариф. Отсканируйте QR-код от оператора или перенесите тариф со старого телефона.',
+            'esim.qr': 'Сканировать QR-код',
+            'esim.transfer': 'Перенести со старого телефона',
+            'esim.later': 'Настроить позже',
+            'passcode.emergency': 'Экстренный вызов',
+            'passcode.emergency.call': 'Вызов {0}…',
             'region.title': 'Страна или регион',
             'region.body': 'Выберите страну или регион, чтобы настроить дату, время, валюту, единицы измерения и юридические требования на устройстве.',
             'toast.region.set': 'Задано: {0}',
@@ -1753,6 +1939,20 @@
             'move.restore.skip': 'Пропустить сейчас, войти позже',
         },
         'vi': {
+            'acc.title': 'Trợ năng',
+            'acc.body': 'Nếu bạn gặp khó khăn khi nhìn, nghe hoặc di chuyển, AuraOS có các tính năng sẵn có để trợ giúp. Bạn có muốn thiết lập tính năng trợ năng ngay bây giờ không?',
+            'acc.now': 'Thiết lập ngay',
+            'acc.later': 'Thiết lập sau',
+            'acc.done': 'Tính năng đọc màn hình hiện đã có. Bạn có thể thay đổi tính năng trợ năng trong Cài đặt bất cứ lúc nào.',
+            'sim.title': 'Không có SIM',
+            'sim.body': 'Không phát hiện SIM. Vui lòng lắp SIM để tiếp tục hoặc kết nối Wi-Fi để thiết lập eSIM.',
+            'esim.title': 'Kích hoạt gói di động',
+            'esim.body': 'Thiết lập gói di động của bạn. Quét mã QR từ nhà mạng hoặc chuyển gói từ điện thoại cũ.',
+            'esim.qr': 'Quét mã QR',
+            'esim.transfer': 'Chuyển từ điện thoại cũ',
+            'esim.later': 'Thiết lập sau',
+            'passcode.emergency': 'Khẩn cấp',
+            'passcode.emergency.call': 'Đang gọi {0}…',
             'region.title': 'Quốc gia hoặc khu vực',
             'region.body': 'Chọn quốc gia hoặc khu vực của bạn để thiết lập ngày, giờ, tiền tệ, đơn vị đo lường và các yêu cầu pháp lý trên thiết bị.',
             'toast.region.set': 'Đã đặt thành {0}',
@@ -1840,6 +2040,20 @@
             'move.restore.skip': 'Bỏ qua ngay bây giờ, đăng nhập sau',
         },
         'el': {
+            'acc.title': 'Προσβασιμότητα',
+            'acc.body': 'Αν δυσκολεύεστε να βλέπετε, να ακούτε ή να κινείστε, το AuraOS διαθέτει ενσωματωμένες λειτουργίες βοήθειας. Θέλετε να ρυθμίσετε τις λειτουργίες προσβασιμότητας τώρα;',
+            'acc.now': 'Ρύθμιση τώρα',
+            'acc.later': 'Ρύθμιση αργότερα',
+            'acc.done': 'Η φωνητική ανάγνωση είναι πλέον διαθέσιμη. Μπορείτε να αλλάξετε τις λειτουργίες προσβασιμότητας στις Ρυθμίσεις ανά πάσα στιγμή.',
+            'sim.title': 'Χωρίς κάρτα SIM',
+            'sim.body': 'Δεν εντοπίστηκε κάρτα SIM. Τοποθετήστε την κάρτα SIM για να συνεχίσετε ή συνδεθείτε στο Wi-Fi για να ρυθμίσετε μια eSIM.',
+            'esim.title': 'Ενεργοποίηση προγράμματος κινητής',
+            'esim.body': 'Ρυθμίστε το πρόγραμμα κινητής τηλεφωνίας. Σαρώστε έναν κωδικό QR από τον πάροχο ή μεταφέρετε ένα πρόγραμμα από το παλιό σας τηλέφωνο.',
+            'esim.qr': 'Σάρωση κωδικού QR',
+            'esim.transfer': 'Μεταφορά από παλιό τηλέφωνο',
+            'esim.later': 'Ρύθμιση αργότερα',
+            'passcode.emergency': 'Έκτακτη ανάγκη',
+            'passcode.emergency.call': 'Κλήση {0}…',
             'region.title': 'Χώρα ή περιοχή',
             'region.body': 'Επιλέξτε τη χώρα ή την περιοχή σας για να ορίσετε την ημερομηνία, την ώρα, το νόμισμα, τις μονάδες μέτρησης και τις νομικές απαιτήσεις της συσκευής.',
             'toast.region.set': 'Ορίστηκε σε {0}',
@@ -1946,6 +2160,8 @@
         if (passPlaceholder) passPlaceholder.placeholder = t('auraid.pass');
         const emInput = document.getElementById('auraid-email');
         if (emInput) emInput.placeholder = 'name@auraos.app';
+        const ek = document.getElementById('emergencyKey');
+        if (ek) ek.textContent = t('passcode.emergency');
         updateClock();
     }
 
@@ -1994,6 +2210,12 @@
         row.classList.add('selected');
         applyLang(row.getAttribute('data-lang'));
         showToast(t('toast.country.set', row.textContent));
+    }
+
+    /* accessibility */
+    function accNow() {
+        showToast(t('acc.done'));
+        next('s-region');
     }
 
     /* region */
@@ -2193,10 +2415,16 @@
         zero.className = 'key'; zero.textContent = 0;
         zero.onclick = () => press(0);
         kp.appendChild(zero);
-        const blank = document.createElement('button');
-        blank.className = 'key'; blank.style.backgroundColor = 'transparent'; blank.disabled = true;
-        kp.appendChild(blank);
+        const em = document.createElement('button');
+        em.className = 'key emergency'; em.id = 'emergencyKey';
+        em.textContent = t('passcode.emergency');
+        em.style.backgroundColor = 'transparent';
+        em.onclick = emergencyCall;
+        kp.appendChild(em);
     }
+    const EMERGENCY = { 'en-US': '911', 'en-CA': '911', 'en-GB': '999', 'en-AU': '000', 'en-NZ': '111', 'en-IE': '112' };
+    function emergencyNumber() { return EMERGENCY[curVariant] || '112'; }
+    function emergencyCall() { showToast(t('passcode.emergency.call', emergencyNumber())); }
     function press(n) {
         passcode.push(n);
         renderDots();
