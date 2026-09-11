@@ -508,8 +508,9 @@
             <h2 class="top-title" data-i18n="region.title">Country or Region</h2>
             <p class="body-text" data-i18n="region.body">Select your country or region to set the date, time, currency, measurements and legal requirements used on your device.</p>
             <div class="list" id="regionList">
-                <div class="row selected"><span>🇦🇺  Australia</span><span class="check">✓</span></div>
+                <div class="row selected"><span>Australia</span><span class="check">✓</span></div>
             </div>
+            <p class="body-text" id="regionVariant" style="text-align:center;margin-top:14px"></p>
             <button class="btn" id="region-continue" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
         </section>
 
@@ -1928,13 +1929,16 @@
     };
     let curLang = 'en';
     function t(key, val) {
-        const dict = I18N[curLang] || I18N['en'];
+        const base = I18N[curLang] || I18N['en'];
+        const ov = VARIANT_OVERRIDES[curVariant];
+        const dict = ov ? Object.assign({}, base, ov) : base;
         let s = dict[key] !== undefined ? dict[key] : (I18N['en'][key] !== undefined ? I18N['en'][key] : key);
         if (val !== undefined) s = s.replace('{0}', val);
         return s;
     }
-    function applyLang(lang) {
+    function applyLang(lang, variant) {
         curLang = lang;
+        if (variant) curVariant = variant;
         document.querySelectorAll('[data-i18n]').forEach(el => {
             el.innerHTML = t(el.getAttribute('data-i18n'));
         });
@@ -1942,6 +1946,7 @@
         if (passPlaceholder) passPlaceholder.placeholder = t('auraid.pass');
         const emInput = document.getElementById('auraid-email');
         if (emInput) emInput.placeholder = 'name@auraos.app';
+        updateClock();
     }
 
     let hist = [];
@@ -1994,106 +1999,120 @@
     /* region */
     const REGIONS = {
         en: [
-            { flag: '🇦🇺', name: 'Australia' },
-            { flag: '🇨🇦', name: 'Canada' },
-            { flag: '🇮🇪', name: 'Ireland' },
-            { flag: '🇳🇿', name: 'New Zealand' },
-            { flag: '🇬🇧', name: 'United Kingdom' },
-            { flag: '🇺🇸', name: 'United States' }
+            { name: 'Australia', variant: 'en-AU' },
+            { name: 'Canada', variant: 'en-CA' },
+            { name: 'Ireland', variant: 'en-IE' },
+            { name: 'New Zealand', variant: 'en-NZ' },
+            { name: 'United Kingdom', variant: 'en-GB' },
+            { name: 'United States', variant: 'en-US' }
         ],
         de: [
-            { flag: '🇦🇹', name: 'Austria' },
-            { flag: '🇧🇪', name: 'Belgium' },
-            { flag: '🇩🇪', name: 'Germany' },
-            { flag: '🇱🇮', name: 'Liechtenstein' },
-            { flag: '🇱🇺', name: 'Luxembourg' },
-            { flag: '🇨🇭', name: 'Switzerland' }
+            { name: 'Austria', variant: 'de-AT' },
+            { name: 'Belgium', variant: 'de-BE' },
+            { name: 'Germany', variant: 'de-DE' },
+            { name: 'Liechtenstein', variant: 'de-LI' },
+            { name: 'Luxembourg', variant: 'de-LU' },
+            { name: 'Switzerland', variant: 'de-CH' }
         ],
         fr: [
-            { flag: '🇧🇪', name: 'Belgium' },
-            { flag: '🇨🇦', name: 'Canada' },
-            { flag: '🇫🇷', name: 'France' },
-            { flag: '🇱🇺', name: 'Luxembourg' },
-            { flag: '🇲🇨', name: 'Monaco' },
-            { flag: '🇨🇭', name: 'Switzerland' }
+            { name: 'Belgium', variant: 'fr-BE' },
+            { name: 'Canada', variant: 'fr-CA' },
+            { name: 'France', variant: 'fr-FR' },
+            { name: 'Luxembourg', variant: 'fr-LU' },
+            { name: 'Monaco', variant: 'fr-MC' },
+            { name: 'Switzerland', variant: 'fr-CH' }
         ],
         es: [
-            { flag: '🇦🇷', name: 'Argentina' },
-            { flag: '🇨🇱', name: 'Chile' },
-            { flag: '🇨🇴', name: 'Colombia' },
-            { flag: '🇲🇽', name: 'Mexico' },
-            { flag: '🇵🇪', name: 'Peru' },
-            { flag: '🇪🇸', name: 'Spain' },
-            { flag: '🇺🇸', name: 'United States' }
+            { name: 'Argentina', variant: 'es-AR' },
+            { name: 'Chile', variant: 'es-CL' },
+            { name: 'Colombia', variant: 'es-CO' },
+            { name: 'Mexico', variant: 'es-MX' },
+            { name: 'Peru', variant: 'es-PE' },
+            { name: 'Spain', variant: 'es-ES' },
+            { name: 'United States', variant: 'es-US' }
         ],
         it: [
-            { flag: '🇮🇹', name: 'Italy' },
-            { flag: '🇸🇲', name: 'San Marino' },
-            { flag: '🇨🇭', name: 'Switzerland' },
-            { flag: '🇻🇦', name: 'Vatican City' }
+            { name: 'Italy', variant: 'it-IT' },
+            { name: 'San Marino', variant: 'it-SM' },
+            { name: 'Switzerland', variant: 'it-CH' },
+            { name: 'Vatican City', variant: 'it-VA' }
         ],
         pt: [
-            { flag: '🇦🇴', name: 'Angola' },
-            { flag: '🇧🇷', name: 'Brazil' },
-            { flag: '🇲🇿', name: 'Mozambique' },
-            { flag: '🇵🇹', name: 'Portugal' }
+            { name: 'Angola', variant: 'pt-AO' },
+            { name: 'Brazil', variant: 'pt-BR' },
+            { name: 'Mozambique', variant: 'pt-MZ' },
+            { name: 'Portugal', variant: 'pt-PT' }
         ],
-        ja: [{ flag: '🇯🇵', name: 'Japan' }],
-        ko: [{ flag: '🇰🇷', name: 'South Korea' }],
+        ja: [{ name: 'Japan', variant: 'ja-JP' }],
+        ko: [{ name: 'South Korea', variant: 'ko-KR' }],
         'zh-Hans': [
-            { flag: '🇨🇳', name: 'China' },
-            { flag: '🇭🇰', name: 'Hong Kong' },
-            { flag: '🇸🇬', name: 'Singapore' },
-            { flag: '🇹🇼', name: 'Taiwan' }
+            { name: 'China', variant: 'zh-CN' },
+            { name: 'Hong Kong', variant: 'zh-HK' },
+            { name: 'Singapore', variant: 'zh-SG' },
+            { name: 'Taiwan', variant: 'zh-TW' }
         ],
         ar: [
-            { flag: '🇧🇭', name: 'Bahrain' },
-            { flag: '🇪🇬', name: 'Egypt' },
-            { flag: '🇮🇶', name: 'Iraq' },
-            { flag: '🇯🇴', name: 'Jordan' },
-            { flag: '🇰🇼', name: 'Kuwait' },
-            { flag: '🇱🇧', name: 'Lebanon' },
-            { flag: '🇲🇦', name: 'Morocco' },
-            { flag: '🇴🇲', name: 'Oman' },
-            { flag: '🇶🇦', name: 'Qatar' },
-            { flag: '🇸🇦', name: 'Saudi Arabia' },
-            { flag: '🇦🇪', name: 'United Arab Emirates' },
-            { flag: '🇾🇪', name: 'Yemen' }
+            { name: 'Bahrain', variant: 'ar-BH' },
+            { name: 'Egypt', variant: 'ar-EG' },
+            { name: 'Iraq', variant: 'ar-IQ' },
+            { name: 'Jordan', variant: 'ar-JO' },
+            { name: 'Kuwait', variant: 'ar-KW' },
+            { name: 'Lebanon', variant: 'ar-LB' },
+            { name: 'Morocco', variant: 'ar-MA' },
+            { name: 'Oman', variant: 'ar-OM' },
+            { name: 'Qatar', variant: 'ar-QA' },
+            { name: 'Saudi Arabia', variant: 'ar-SA' },
+            { name: 'United Arab Emirates', variant: 'ar-AE' },
+            { name: 'Yemen', variant: 'ar-YE' }
         ],
         ru: [
-            { flag: '🇧🇾', name: 'Belarus' },
-            { flag: '🇰🇿', name: 'Kazakhstan' },
-            { flag: '🇰🇬', name: 'Kyrgyzstan' },
-            { flag: '🇷🇺', name: 'Russia' }
+            { name: 'Belarus', variant: 'ru-BY' },
+            { name: 'Kazakhstan', variant: 'ru-KZ' },
+            { name: 'Kyrgyzstan', variant: 'ru-KG' },
+            { name: 'Russia', variant: 'ru-RU' }
         ],
-        vi: [{ flag: '🇻🇳', name: 'Vietnam' }],
+        vi: [{ name: 'Vietnam', variant: 'vi-VN' }],
         el: [
-            { flag: '🇨🇾', name: 'Cyprus' },
-            { flag: '🇬🇷', name: 'Greece' }
+            { name: 'Cyprus', variant: 'el-CY' },
+            { name: 'Greece', variant: 'el-GR' }
         ]
     };
+    const VARIANT_OVERRIDES = {
+        'en-GB': { 'customize.title': 'Customise Your Aura', 'customize.c1.title': 'Customise' },
+        'en-AU': { 'customize.title': 'Customise Your Aura', 'customize.c1.title': 'Customise' },
+        'en-NZ': { 'customize.title': 'Customise Your Aura', 'customize.c1.title': 'Customise' },
+        'en-IE': { 'customize.title': 'Customise Your Aura', 'customize.c1.title': 'Customise' }
+    };
+    const LANG_LABEL = { en: 'English', de: 'Deutsch', fr: 'Français', es: 'Español', it: 'Italiano', pt: 'Português', ja: '日本語', ko: '한국어', 'zh-Hans': '中文 (简体)', ar: 'العربية', ru: 'Русский', vi: 'Tiếng Việt', el: 'Ελληνικά' };
+    const HOURS12 = ['en-US', 'en-CA', 'en-AU', 'en-NZ'];
+    let curVariant = 'en-US';
     let currentRegion = REGIONS.en[0];
     function enterRegion() {
         const list = document.getElementById('regionList');
+        const label = document.getElementById('regionVariant');
+        const cont = document.getElementById('region-continue');
         if (!list) return;
         const opts = REGIONS[curLang] || REGIONS.en;
         list.innerHTML = '';
         opts.forEach((r, idx) => {
             const row = document.createElement('div');
             row.className = 'row' + (idx === 0 ? ' selected' : '');
-            row.innerHTML = '<span>' + r.flag + '  ' + r.name + '</span><span class="check">✓</span>';
+            row.innerHTML = '<span>' + r.name + '</span><span class="check">✓</span>';
             row.onclick = () => pickRegion(row, r);
             list.appendChild(row);
         });
         currentRegion = opts[0];
-        const cont = document.getElementById('region-continue');
+        applyLang(curLang, opts[0].variant);
+        if (label) label.textContent = (LANG_LABEL[curLang] || curLang) + ' (' + opts[0].variant + ')';
         if (cont) cont.disabled = false;
     }
     function pickRegion(row, r) {
         row.parentElement.querySelectorAll('.row').forEach(x => x.classList.remove('selected'));
         row.classList.add('selected');
         currentRegion = r;
-        showToast(t('toast.region.set', r.name));
+        applyLang(curLang, r.variant);
+        document.getElementById('regionVariant').textContent = (LANG_LABEL[curLang] || curLang) + ' (' + r.variant + ')';
+        showToast(t('toast.region.set', (LANG_LABEL[curLang] || curLang) + ' (' + r.variant + ')'));
     }
     function pickCard(c) {
         c.parentElement.querySelectorAll('.card').forEach(x => x.classList.remove('selected'));
@@ -2359,7 +2378,10 @@
     function updateClock() {
         const now = new Date();
         const h = now.getHours(), m = now.getMinutes();
-        const tStr = (h % 12 || 12) + ':' + String(m).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        const tStr = HOURS12.includes(curVariant)
+            ? (h % 12 || 12) + ':' + mm
+            : String(h).padStart(2, '0') + ':' + mm;
         document.getElementById('time').textContent = tStr;
     }
 
