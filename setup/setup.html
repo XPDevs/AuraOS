@@ -76,10 +76,8 @@
     .statusbar .time { margin-left: 2px; }
     .icons { display: flex; align-items: center; gap: 6px; }
 
-    .icon-signal rect { fill: currentColor; opacity: 1; transition: opacity 0.2s; }
-    .icon-signal rect.off { fill: transparent; stroke: currentColor; stroke-width: 1; opacity: 0.4; }
-    .icon-wifi { stroke: currentColor; }
-    .icon-wifi circle { fill: currentColor; stroke: none; }
+    .icon-signal, .icon-wifi { display: block; opacity: 1; transition: opacity 0.2s; }
+    .icon-signal.dim { opacity: 0.4; }
     .celltype { font-size: 11px; font-weight: 600; margin-right: 1px; }
 
     .battery { position: relative; width: 25px; height: 12px; }
@@ -114,6 +112,18 @@
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
     }
+
+    .power-btn {
+        position: absolute;
+        top: 50px; right: 14px;
+        width: 40px; height: 40px;
+        z-index: 95;
+        border: none; background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+    }
+    .power-btn img { width: 22px; height: 22px; }
+    .power-btn.hidden { display: none; }
 
     main { position: absolute; inset: 0; }
 
@@ -255,22 +265,34 @@
         to { opacity: 0; transform: translateY(-90px); }
     }
 
-    /* wifi join */
+    /* wifi join (design.md modal) */
     .join-overlay {
         position: absolute; inset: 0; z-index: 60;
-        background: rgba(0,0,0,0.25);
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
         display: none; align-items: center; justify-content: center;
     }
     .join-overlay.show { display: flex; }
+    .overlay-open main, .overlay-open .backbar, .overlay-open .power-btn, .overlay-open .statusbar { pointer-events: none; }
     .join-card {
-        width: 300px; background: var(--cardbg); border-radius: 16px;
+        width: 300px; background: var(--cardbg); border-radius: 28px;
         padding: 22px 20px;
         text-align: center;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
     .join-card .label { font-size: 17px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
     .join-card svg { margin: 0 auto; }
     .join-card .sub { font-size: 14px; color: var(--subtle); margin-top: 14px; }
+
+    .power-options { display: flex; flex-direction: column; gap: 10px; }
+    .power-opt {
+        padding: 13px 0;
+        border: none; border-radius: 14px;
+        background: var(--cardicon); color: var(--text);
+        font-size: 16px; font-weight: 500;
+        cursor: pointer;
+    }
+    .power-opt.cancel { background: transparent; color: #007AFF; }
 
     /* data & privacy */
     .data-icon {
@@ -280,19 +302,6 @@
         display: flex; align-items: center; justify-content: center;
     }
     .data-icon svg { width: 44px; height: 44px; }
-
-    /* face id */
-    .face-ring {
-        width: 150px; height: 150px; margin: 8px auto 40px;
-        border: 2.5px solid var(--border); border-radius: 50%;
-        position: relative;
-        display: flex; align-items: center; justify-content: center;
-        animation: facePulse 2.2s ease-in-out infinite;
-    }
-    @keyframes facePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-    .face-ring .inner { text-align: center; }
-    .face-ring .inner svg { width: 54px; height: 54px; color: var(--text); }
-    .face-ring .inner div { font-size: 13px; color: var(--subtle); margin-top: 4px; }
 
     /* passcode */
     .pincode { margin: 60px 0 10px; text-align: center; }
@@ -307,12 +316,12 @@
     .keypad {
         margin-top: 26px;
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px 8px;
-        max-width: 320px; margin-left: auto; margin-right: auto;
+        grid-template-columns: repeat(3, auto);
+        justify-content: center;
+        gap: 14px 18px;
     }
     .key {
-        height: 64px; border-radius: 50%;
+        width: 72px; height: 72px; border-radius: 50%;
         border: none; background: var(--keybg);
         font-size: 26px; font-weight: 400; color: var(--text);
         cursor: pointer;
@@ -351,18 +360,51 @@
     .switch-row:last-child { border-bottom: none; }
     .switch-row .label { font-size: 17px; color: var(--text); }
     .switch {
-        width: 51px; height: 31px; border-radius: 16px;
-        background: #E9E9EB; position: relative; cursor: pointer;
-        transition: 0.2s;
+        width: 48px; height: 24px; border-radius: 24px;
+        background: #ccc; position: relative; cursor: pointer;
+        transition: .3s;
     }
     .switch::after {
-        content: ''; position: absolute; top: 2px; left: 2px;
-        width: 27px; height: 27px; border-radius: 50%;
-        background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.25);
-        transition: 0.2s;
+        content: ''; position: absolute; top: 3px; left: 3px;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: #fff;
+        transition: .3s;
     }
-    .switch.on { background: #34C759; }
-    .switch.on::after { left: 22px; }
+    .switch.on { background: #1a73e8; }
+    .switch.on::after { transform: translateX(24px); }
+
+    /* move data */
+    .move-steps { list-style: none; counter-reset: step; margin: 0 0 26px; }
+    .move-steps li { position: relative; padding: 0 0 18px 40px; font-size: 16px; line-height: 1.45; color: var(--text); }
+    .move-steps li::before {
+        content: counter(step); counter-increment: step;
+        position: absolute; left: 0; top: 1px;
+        width: 26px; height: 26px; border-radius: 50%;
+        background: #007AFF; color: #fff;
+        font-size: 13px; font-weight: 600;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .code-box {
+        text-align: center;
+        padding: 24px 16px;
+        border-radius: 20px;
+        background: var(--cardbg);
+        border: 1px solid var(--border);
+        margin-top: 6px;
+    }
+    .code-label { font-size: 13px; color: var(--subtle); margin-bottom: 14px; }
+    .move-code {
+        font-size: 42px; font-weight: 600; letter-spacing: 12px; padding-left: 12px;
+        color: var(--text); transition: opacity 0.2s ease;
+    }
+    .move-code.scrambling { opacity: 0.25; }
+    .move-code.ready { opacity: 1; }
+    .restore-progress {
+        height: 8px; border-radius: 4px; background: var(--border);
+        overflow: hidden; margin: 26px 0 14px;
+    }
+    .restore-progress .bar { height: 100%; width: 0%; border-radius: 4px; background: #007AFF; transition: width 0.3s; }
+    .restore-status { text-align: center; font-size: 14px; color: var(--subtle); }
 
     /* appearance */
     .appearance-wrap { display: flex; gap: 14px; margin: 10px 0 28px; }
@@ -411,12 +453,8 @@
         <div class="time" id="time">9:41</div>
         <div class="icons">
             <span class="celltype" id="cellType" style="display:none">LTE</span>
-            <svg class="icon-signal" width="18" height="12" viewBox="0 0 18 12">
-                <rect x="1" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13" y="0" width="3" height="12" rx="1"/>
-            </svg>
-            <svg class="icon-wifi" width="17" height="12" viewBox="0 0 17 12" fill="none" stroke-width="1.6" stroke-linecap="round">
-                <path d="M1 4.2a11 11 0 0 1 15 0"/><path d="M3.5 7a7.5 7.5 0 0 1 10 0"/><path d="M6 9.6a4 4 0 0 1 5 0"/><circle cx="8.5" cy="11" r="1.1" fill="currentColor"/>
-            </svg>
+            <img class="icon-signal" id="signalIcon" src="../system-assets/signal.svg" alt="" width="18" height="12">
+            <img class="icon-wifi" id="wifiIcon" src="../system-assets/wifi.svg" alt="" width="17" height="12">
             <div class="battery"><div class="fill"></div></div>
         </div>
     </div>
@@ -425,11 +463,15 @@
         <button class="back-btn" onclick="goPrev()">‹</button>
     </div>
 
+    <button class="power-btn" id="powerBtn" onclick="togglePowerMenu()" aria-label="Power">
+        <img src="../system-assets/power.svg" alt="">
+    </button>
+
     <main>
 
         <!-- HELLO -->
         <section class="screen hello" id="s-hello">
-            <img src="logo.png" alt="" class="hello-logo">
+            <img src="../system-assets/xpdevs-logo.png" alt="" class="hello-logo">
             <div class="hello-lang">
                 <div class="greet" id="greet">Hello</div>
                 <div class="greet-lang" id="greetLang">English</div>
@@ -488,25 +530,37 @@
                 It’s your data. You decide what to share and what not to share.<br><br>
                 Everything processed on-device stays on-device.
             </p>
-            <button class="btn center" onclick="next('s-faceid')" data-i18n="privacy.continue">Continue &amp; Agree</button>
+            <button class="btn center" onclick="next('s-terms')" data-i18n="privacy.continue">Continue &amp; Agree</button>
         </section>
 
-        <!-- FACE ID -->
-        <section class="screen" id="s-faceid">
-            <div class="face-ring">
-                <div class="inner">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-                        <circle cx="12" cy="9" r="3"/><path d="M6 18c1-3 3-4 6-4s5 1 6 4"/>
-                    </svg>
-                    <div data-i18n="faceid.name">Aura Face</div>
-                </div>
+        <!-- TERMS -->
+        <section class="screen" id="s-terms">
+            <h2 class="top-title" data-i18n="terms.title">Terms and<br>Conditions</h2>
+            <div class="body-text" id="terms-box" style="max-height:44%;overflow-y:auto;font-size:14.5px;line-height:1.55;color:var(--muted);padding-right:4px">
+                <p><strong>AuraOS Terms and Conditions</strong></p>
+                <p style="margin-top:8px">Last updated: May 2025. These Terms and Conditions (&ldquo;Terms&rdquo;) govern your access to and use of the AuraOS operating system, its built-in software, and related services (collectively, &ldquo;AuraOS&rdquo;) provided by XPDevs, its subsidiaries, and its affiliates (&ldquo;XPDevs&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;). Please read these Terms carefully before using AuraOS.</p>
+                <p style="margin-top:12px"><strong>1. Acceptance of Terms.</strong> By activating AuraOS, setting up your device, or otherwise using any portion of AuraOS, you acknowledge that you have read, understood, and agree to be bound by these Terms and by the XPDevs Privacy Policy, which is incorporated by reference. If you do not agree to these Terms, you must not use AuraOS.</p>
+                <p style="margin-top:12px"><strong>2. Changes to These Terms.</strong> We may revise these Terms from time to time in our sole discretion. When we make changes, we will update the &ldquo;Last updated&rdquo; date above and, where appropriate, notify you through AuraOS. Continued use of AuraOS after changes take effect constitutes acceptance of the revised Terms. If you do not agree to the revised Terms, you should stop using AuraOS.</p>
+                <p style="margin-top:12px"><strong>3. Eligibility.</strong> AuraOS is intended for individuals who are at least 13 years of age (or the minimum age required by the laws of your country of residence). By accepting these Terms you represent and warrant that you meet this requirement and that you have the legal capacity to enter into this agreement.</p>
+                <p style="margin-top:12px"><strong>4. Your Aura ID and Account.</strong> Certain features, including Messages, the App Store, Aura Music, Aura Cloud backup, Find My Aura, and other services, require you to sign in with an Aura ID. You are responsible for maintaining the confidentiality of your credentials, for all activity under your account, and for notifying us immediately of any unauthorized use. You may not create accounts through automated means or on behalf of third parties without authorization.</p>
+                <p style="margin-top:12px"><strong>5. License Grant.</strong> Subject to your compliance with these Terms, XPDevs grants you a limited, personal, non-exclusive, non-transferable, and revocable license to use AuraOS on the Aura device for which it was provided, for your personal, non-commercial purposes, and only in accordance with the documentation provided. All rights not expressly granted are reserved.</p>
+                <p style="margin-top:12px"><strong>6. Restrictions.</strong> You may not, and may not permit others to: rent, lease, lend, sell, redistribute, or sublicense AuraOS; copy, modify, adapt, translate, or create derivative works of AuraOS; decompile, reverse engineer, disassemble, or attempt to derive the source code of AuraOS, except to the extent expressly permitted by applicable law; circumvent, disable, or interfere with security, authentication, or device-management features; remove, obscure, or alter any proprietary notices; or use AuraOS in any manner that violates applicable laws, regulations, or the rights of others.</p>
+                <p style="margin-top:12px"><strong>7. Automatic Updates.</strong> AuraOS may automatically download and install updates, upgrades, and additional features from time to time. Updates may be required to maintain compatibility, security, and functionality. Such updates may add, modify, or remove features, services, or software, and may be installed without prior notice. By using AuraOS you consent to these automatic updates.</p>
+                <p style="margin-top:12px"><strong>8. Services and In-App Purchases.</strong> AuraOS may include or provide access to products, services, and subscription offerings such as Aura Cloud storage, Aura Music, Aura Pay, and purchases made through the App Store (&ldquo;Services&rdquo;). Additional terms and fees may apply to these Services, and you are responsible for all charges incurred. Purchases are generally final; refund requests are subject to applicable law and to the refund policies governing the specific Service.</p>
+                <p style="margin-top:12px"><strong>9. Data, Privacy, and Analytics.</strong> AuraOS collects, uses, and discloses certain data as described in the Data &amp; Privacy information presented during setup and in the XPDevs Privacy Policy. You consent to the collection, processing, and transfer of such data, including system analytics, crash reports, and usage information designed to improve AuraOS. Where applicable, we may share aggregated, non-personally identifiable data with partners for the purpose of improving products and services.</p>
+                <p style="margin-top:12px"><strong>10. Aura Cloud Backup and Recovery.</strong> Some data may be stored in Aura Cloud if you enable backup. You are responsible for the accuracy and completeness of information you back up, and you acknowledge that certain data may not be recoverable. We use reasonable measures to protect your data, but AuraOS will not rebate, refund, or compensate you for data loss except as required by applicable law. You are solely responsible for maintaining alternative, independent records of your important data.</p>
+                <p style="margin-top:12px"><strong>11. Third-Party Software and Content.</strong> AuraOS may contain, link to, or enable access to third-party software, websites, advertisements, and content. Third-party services are provided &ldquo;as is&rdquo; and are governed by the terms and privacy policies of their respective providers. XPDevs is not responsible for, and does not endorse, the availability, accuracy, legality, or quality of any third-party services or content.</p>
+                <p style="margin-top:12px"><strong>12. Security and Anti-Abuse.</strong> You agree not to use AuraOS to: transmit malware, spam, or harmful code; engage in fraud, phishing, or deceptive practices; harass, threaten, or defame others; infringe intellectual property rights; attempt to gain unauthorized access to any device, network, or account; or interfere with the operation of AuraOS or the services of others. We may suspend or terminate access to any Service, without notice, if we reasonably believe you have violated this clause.</p>
+                <p style="margin-top:12px"><strong>13. Intellectual Property.</strong> AuraOS and all associated software, code, graphics, logos, design elements, trademarks, service marks, and documentation are the property of XPDevs or its licensors and are protected by copyright, trademark, patent, trade secret, and other intellectual property laws. You acquire no ownership rights in AuraOS or any of its components. Aura, AuraOS, and all related names and logos are trademarks of XPDevs.</p>
+                <p style="margin-top:12px"><strong>14. Disclaimer of Warranties.</strong> TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, AURAOS AND ALL SERVICES ARE PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo;, WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. XPDevs DOES NOT WARRANT THAT AURAOS WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF VIRUSES, NOR THAT ALL ERRORS OR DEFECTS WILL BE CORRECTED.</p>
+                <p style="margin-top:12px"><strong>15. Limitation of Liability.</strong> TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, XPDevs, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, AND LICENSORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE AURAOS, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. IN NO EVENT SHALL XPDevs&rsquo; TOTAL AGGREGATE LIABILITY EXCEED THE GREATER OF THE AMOUNTS YOU PAID FOR AURAOS IN THE PRECEDING TWELVE (12) MONTHS OR ONE HUNDRED EUROS (&euro;100).</p>
+                <p style="margin-top:12px"><strong>16. Indemnification.</strong> To the extent permitted by law, you agree to indemnify, defend, and hold harmless XPDevs and its officers, directors, employees, agents, and licensors from and against any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys&rsquo; fees) arising out of or related to your use of AuraOS, your violation of these Terms, or your violation of any rights of a third party.</p>
+                <p style="margin-top:12px"><strong>17. Termination.</strong> These Terms remain in effect until terminated by you or by XPDevs. You may terminate these Terms by discontinuing use of AuraOS. We may suspend or terminate your access to AuraOS or any Service at any time, with or without notice, if you breach these Terms or if required by law. Upon termination, all licenses granted under these Terms will terminate, and you must cease all use of AuraOS.</p>
+                <p style="margin-top:12px"><strong>18. Export and Compliance.</strong> AuraOS may be subject to the export control and sanctions laws of the European Union, the United States, and other jurisdictions. You agree to comply with all such laws and agree not to export, re-export, or make available AuraOS in violation of them or to any prohibited country, entity, or individual.</p>
+                <p style="margin-top:12px"><strong>19. Governing Law and Dispute Resolution.</strong> To the extent not otherwise provided by mandatory local law, these Terms are governed by the laws of the Netherlands. You and XPDevs agree to first attempt to resolve any dispute informally by contacting our support team. If the dispute is not resolved within thirty (30) days, any legal action shall be brought exclusively in the competent courts of Amsterdam, the Netherlands, and you irrevocably consent to that jurisdiction and venue.</p>
+                <p style="margin-top:12px"><strong>20. General Provisions.</strong> These Terms constitute the entire agreement between you and XPDevs regarding AuraOS and supersede all prior agreements and understandings. If any provision is held to be invalid or unenforceable, that provision will be enforced to the maximum extent permitted and the remaining provisions will remain in full force and effect. AuraOS is not a medical, emergency, or life-safety device; do not rely on it in situations where failure could result in death, personal injury, or severe property damage. Please read and review these Terms carefully before proceeding.</p>
             </div>
-            <h2 class="top-title" style="text-align:center" data-i18n="faceid.title">Set Up Aura Face</h2>
-            <p class="body-text" style="text-align:center" data-i18n="faceid.body">
-                Use Aura Face to securely unlock your Aura, make purchases, and sign in to apps.
-            </p>
-            <button class="btn center" id="faceid-main" onclick="startFaceScan()" data-i18n="faceid.main">Set Up Aura Face</button>
-            <button class="link" onclick="next('s-passcode')" data-i18n="faceid.later">Set Up Later</button>
+            <button class="btn" id="terms-btn" disabled onclick="next('s-passcode')" data-i18n="terms.agree">Agree</button>
         </section>
 
         <!-- PASSCODE -->
@@ -515,58 +569,6 @@
             <p class="body-text" style="text-align:center" id="pass-hint" data-i18n="passcode.hint">This passcode will be used to unlock your Aura.</p>
             <div class="pincode" id="pincode"></div>
             <div class="keypad" id="keypad"></div>
-        </section>
-
-        <!-- CUSTOMIZE -->
-        <section class="screen" id="s-customize">
-            <h2 class="top-title" data-i18n="customize.title">Customize Your Aura</h2>
-            <div class="cards">
-                <div class="card dark selected" onclick="pickCard(this)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <h3 data-i18n="customize.c1.title">Customize</h3>
-                    <p data-i18n="customize.c1.desc">Set up appearance, widgets, and Focus as you like.</p>
-                </div>
-                <div class="card" onclick="pickCard(this)">
-                    <div class="card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/>
-                        </svg>
-                    </div>
-                    <h3 data-i18n="customize.c2.title">Transfer from Android</h3>
-                    <p data-i18n="customize.c2.desc">Move apps, messages, and photos from your old device.</p>
-                </div>
-            </div>
-            <button class="btn" onclick="next('s-appsdata')" data-i18n="continue">Continue</button>
-        </section>
-
-        <!-- APPS & DATA -->
-        <section class="screen" id="s-appsdata">
-            <h2 class="top-title" data-i18n="appsdata.title">Apps &amp; Data</h2>
-            <p class="body-text" data-i18n="appsdata.body">Choose your transfer method.</p>
-            <div class="list">
-                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r1">Move Data from Android</span><span class="icon">→</span></div>
-                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r2">Restore from Aura Cloud Backup</span><span class="icon">→</span></div>
-                <div class="row" onclick="pickRow(this)"><span data-i18n="appsdata.r3">Don’t Transfer Data</span><span class="icon">→</span></div>
-            </div>
-            <button class="btn" onclick="next('s-pay')" data-i18n="continue">Continue</button>
-        </section>
-
-        <!-- APPLE PAY / SECURE ENROLL -->
-        <section class="screen" id="s-pay">
-            <div class="card-icon" style="width:80px;height:80px;border-radius:18px;background:var(--cardicon);margin:20px auto 30px;display:flex;align-items:center;justify-content:center;color:var(--text);">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.4 14.4l-4.6-4.6 1.4-1.4 3.2 3.2 6.1-6.1 1.4 1.4-7.5 7.5z"/>
-                </svg>
-            </div>
-            <h2 class="top-title" style="text-align:center" data-i18n="pay.title">Secure Enroll</h2>
-            <p class="body-text" style="text-align:center" data-i18n="pay.body">
-                Add a card to <strong>Aura Pay</strong> for secure payments in stores and in apps.
-            </p>
-            <button class="btn center" onclick="next('s-auraid')" data-i18n="pay.btn">Add Card Later</button>
         </section>
 
 <!-- AURA ID SIGN IN -->
@@ -581,24 +583,83 @@
                     <input type="password" id="auraid-pass" placeholder="Password" style="border:none;outline:none;font-size:17px;width:100%;background:transparent" oninput="checkAuraId()">
                 </div>
             </div>
-            <button class="btn" id="auraid-btn" disabled onclick="next('s-terms')" data-i18n="continue">Continue</button>
-            <button class="link" onclick="next('s-terms')" data-i18n="auraid.skip">Don’t have an Aura ID? Create yours.</button>
+            <button class="btn" id="auraid-btn" disabled onclick="auraIdContinue()" data-i18n="continue">Continue</button>
+            <button class="link" onclick="next('s-appsdata'); restoreFlow='none'" data-i18n="auraid.skip">Don’t have an Aura ID? Create yours.</button>
         </section>
 
-        <!-- TERMS -->
-        <section class="screen" id="s-terms">
-            <h2 class="top-title" data-i18n="terms.title">Terms and<br>Conditions</h2>
-            <div class="body-text" style="max-height:46%;overflow-y:auto;font-size:15px;color:var(--muted)">
-                <p><strong>AuraOS Software License Agreement</strong></p>
-                <p style="margin-top:10px">1. Acceptance. By using AuraOS you agree to these terms, the XPDevs Privacy Policy, and the Terms of Service.</p>
-                <p style="margin-top:8px">2. License. XPDevs grants you a limited, non-transferable license to use AuraOS you have obtained in accordance with these terms.</p>
-                <p style="margin-top:8px">3. Updates. This software may automatically download and install updates. Updates may add, remove, or change features.</p>
-                <p style="margin-top:8px">4. Privacy. Details about the data AuraOS collects are described in the Data &amp; Privacy pages shown earlier.</p>
-                <p style="margin-top:8px">5. Warranty. To the extent permitted by law, AuraOS is provided “as is” without warranty of any kind.</p>
-                <p style="margin-top:8px">6. Software subject to restrictions. This software may be subject to export laws.</p>
-                <p style="margin-top:8px">7. Limitation of Liability. To the maximum extent permitted, XPDevs shall not be liable for indirect or consequential damages.</p>
+        <!-- APPS & DATA -->
+        <section class="screen" id="s-appsdata">
+            <h2 class="top-title" data-i18n="appsdata.title">Apps &amp; Data</h2>
+            <p class="body-text" data-i18n="appsdata.body">Choose your transfer method.</p>
+            <div class="list">
+                <div class="row" onclick="next('s-move-ios')"><span data-i18n="appsdata.r0">Move from iPhone or Aura</span><span class="icon">→</span></div>
+                <div class="row" onclick="next('s-move-android')"><span data-i18n="appsdata.r1">Move Data from Android</span><span class="icon">→</span></div>
+                <div class="row" onclick="next('s-restore')"><span data-i18n="appsdata.r2">Restore from Aura Cloud Backup</span><span class="icon">→</span></div>
+                <div class="row" onclick="next('s-pay')"><span data-i18n="appsdata.r3">Don’t Transfer Data</span><span class="icon">→</span></div>
             </div>
-            <button class="btn" onclick="next('s-express')" data-i18n="terms.agree">Agree</button>
+            <button class="btn" onclick="next('s-pay')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- MOVE FROM IPHONE OR AURA -->
+        <section class="screen" id="s-move-ios">
+            <div class="data-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 5.5h2"/>
+                    <path d="M2.5 9a8.5 8.5 0 0 1 19 0" opacity="0.75"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="move.ios.title">Move from iPhone or Aura</h2>
+            <p class="body-text" style="text-align:center" data-i18n="move.ios.body">Keep your contacts, photos, messages, and more. Place the devices side by side to transfer them directly.</p>
+            <button class="btn center" onclick="startPair('ios')" data-i18n="move.ios.btn">Continue</button>
+        </section>
+
+        <!-- MOVE FROM ANDROID -->
+        <section class="screen" id="s-move-android">
+            <div class="data-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6.5l6-3v17l-6-3z"/><path d="M14 3.5l6 3-6 14z"/><path d="M10 3.5h4"/><path d="M10 20.5h4"/>
+                </svg>
+            </div>
+            <h2 class="top-title" data-i18n="move.android.title">Move Data from Android</h2>
+            <ol class="move-steps">
+                <li data-i18n="move.android.s1">Open the Aura quick start on your Android device.</li>
+                <li data-i18n="move.android.s2">Download and open the XPDevs Move app from your app store.</li>
+                <li data-i18n="move.android.s3">On Android, tap Continue and enter the code shown on this Aura.</li>
+            </ol>
+            <div class="code-box">
+                <div class="code-label" data-i18n="move.android.codeLabel">Enter this code to start moving</div>
+                <div class="move-code" id="moveCode"></div>
+            </div>
+            <button class="btn" onclick="next('s-pay')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- RESTORE FROM CLOUD -->
+        <section class="screen" id="s-restore">
+            <div class="data-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 10a6 6 0 0 0-11.7 1.7A4 4 0 0 0 7.5 19h10.5a4.3 4.3 0 0 0 0-9z"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="move.restore.title">Restore from Aura Cloud Backup</h2>
+            <p class="body-text" style="text-align:center" id="restoreStatus"></p>
+            <div class="restore-progress" id="restoreProgress" style="display:none"><div class="bar" id="restoreBar"></div></div>
+            <button class="btn" id="restore-signin" onclick="goRestoreSignIn()" data-i18n="move.restore.goSignin">Sign In with Aura ID</button>
+            <button class="btn" id="restore-btn" disabled style="display:none" onclick="next('s-pay')" data-i18n="continue">Continue</button>
+            <button class="link" id="restore-skip" onclick="next('s-pay')" data-i18n="move.restore.skip">Skip for Now, Sign In Later</button>
+        </section>
+
+        <!-- APPLE PAY / SECURE ENROLL -->
+        <section class="screen" id="s-pay">
+            <div class="card-icon" style="width:80px;height:80px;border-radius:18px;background:var(--cardicon);margin:20px auto 30px;display:flex;align-items:center;justify-content:center;color:var(--text);">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.4 14.4l-4.6-4.6 1.4-1.4 3.2 3.2 6.1-6.1 1.4 1.4-7.5 7.5z"/>
+                </svg>
+            </div>
+            <h2 class="top-title" style="text-align:center" data-i18n="pay.title">Secure Enroll</h2>
+            <p class="body-text" style="text-align:center" data-i18n="pay.body">
+                Add a card to <strong>Aura Pay</strong> for secure payments in stores and in apps.
+            </p>
+            <button class="btn center" onclick="next('s-express')" data-i18n="pay.btn">Add Card Later</button>
         </section>
 
         <!-- EXPRESS SETTINGS -->
@@ -607,7 +668,7 @@
             <p class="body-text" data-i18n="express.body">These features set themselves up automatically. You can change them in Settings later.</p>
             <div class="switch-row"><span class="label" data-i18n="express.msg">Messages</span><div class="switch on" onclick="toggle(this)"></div></div>
             <div class="switch-row"><span class="label" data-i18n="express.loc">Location Services</span><div class="switch on" onclick="toggle(this)"></div></div>
-            <div class="switch-row"><span class="label">Aura Assistant</span><div class="switch on" onclick="toggle(this)"></div></div>
+            <div class="switch-row"><span class="label" data-i18n="express.assist">Aura Assistant</span><div class="switch on" onclick="toggle(this)"></div></div>
             <div class="switch-row"><span class="label" data-i18n="express.find">Find My Aura</span><div class="switch on" onclick="toggle(this)"></div></div>
             <div class="switch-row"><span class="label" data-i18n="express.st">Screen Time</span><div class="switch on" onclick="toggle(this)"></div></div>
             <button class="btn" onclick="next('s-analytics')" data-i18n="continue">Continue</button>
@@ -639,14 +700,39 @@
             <button class="btn" onclick="finishSetup()" data-i18n="continue">Continue</button>
         </section>
 
-        <!-- WELCOME -->
-        <section class="screen welcome" id="s-welcome">
-            <img src="logo.png" alt="" class="logo-img">
-            <h1 data-i18n="welcome.title">Welcome to Aura</h1>
-            <p data-i18n="welcome.body">Your device is set up and ready to go. We hope you enjoy using AuraOS.</p>
-            <button class="btn" onclick="goRestart()" data-i18n="welcome.btn">Get Started</button>
+        <!-- CUSTOMIZE -->
+        <section class="screen" id="s-customize">
+            <h2 class="top-title" data-i18n="customize.title">Customize Your Aura</h2>
+            <div class="cards">
+                <div class="card dark selected" onclick="pickCard(this)">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h3 data-i18n="customize.c1.title">Customize</h3>
+                    <p data-i18n="customize.c1.desc">Set up appearance, widgets, and Focus as you like.</p>
+                </div>
+                <div class="card" onclick="pickCard(this)">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/>
+                        </svg>
+                    </div>
+                    <h3 data-i18n="customize.c2.title">Transfer from Android</h3>
+                    <p data-i18n="customize.c2.desc">Move apps, messages, and photos from your old device.</p>
+                </div>
+            </div>
+            <button class="btn" onclick="next('s-welcome')" data-i18n="continue">Continue</button>
         </section>
 
+        <!-- WELCOME -->
+        <section class="screen welcome" id="s-welcome">
+            <img src="../system-assets/xpdevs-logo.png" alt="" class="logo-img">
+            <h1 data-i18n="welcome.title">Welcome to AuraOS</h1>
+            <p data-i18n="welcome.body">One final step — your device needs to restart to finish installing Aura. Everything will be ready when it starts up again.</p>
+            <button class="btn" onclick="goRestart()" data-i18n="welcome.btn">Restart to Finish Setup</button>
+        </section>
     </main>
 
     <div class="join-overlay" id="joinOverlay">
@@ -663,6 +749,30 @@
         </div>
     </div>
 
+    <div class="join-overlay" id="transferOverlay">
+        <div class="join-card">
+            <div class="label" id="xferLabel"></div>
+            <svg class="spinner-mini" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40">
+                    <animateTransform attributeName="transform" type="rotate" values="-90;810" keyTimes="0;1" dur="1.2s" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" values="0%;0%;-125.66%" calcMode="spline" keySplines="0.61,1,0.88,1;0.12,0,0.39,0" keyTimes="0;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dasharray" values="0% 251.32%;125.66% 125.66%;0% 251.32%" calcMode="spline" keySplines="0.61,1,0.88,1;0.12,0,0.39,0" keyTimes="0;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <div class="sub" id="xferSub"></div>
+        </div>
+    </div>
+
+    <div class="join-overlay" id="powerOverlay">
+        <div class="join-card">
+            <div class="power-options">
+                <button class="power-opt" onclick="powerAction('restart')" data-i18n="power.restart">Restart</button>
+                <button class="power-opt" onclick="powerAction('shutdown')" data-i18n="power.shutdown">Shut Down</button>
+                <button class="power-opt cancel" onclick="closePowerMenu()" data-i18n="power.cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 </div>
 
@@ -671,9 +781,13 @@
     const statusbar = document.getElementById('statusbar');
     const backbar = document.getElementById('backbar');
     const phone = document.getElementById('phone');
+    const powerBtn = document.getElementById('powerBtn');
     /* i18n: applying the selected country's language */
     const I18N = {
         'en': {
+            'power.restart': 'Restart',
+            'power.shutdown': 'Shut Down',
+            'power.cancel': 'Cancel',
             'continue': 'Continue',
             'lang.title': 'Language',
             'wifi.title': 'Wi-Fi Networks',
@@ -686,14 +800,6 @@
             'privacy.title': 'Data &amp; Privacy',
             'privacy.body': 'It’s your data. You decide what to share and what not to share.<br><br>Everything processed on-device stays on-device.',
             'privacy.continue': 'Continue &amp; Agree',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Set Up Aura Face',
-            'faceid.body': 'Use Aura Face to securely unlock your Aura, make purchases, and sign in to apps.',
-            'faceid.main': 'Set Up Aura Face',
-            'faceid.later': 'Set Up Later',
-            'faceid.scanning': 'Scanning…',
-            'faceid.done': 'Done',
-            'faceid.enabled': 'Aura Face enabled',
             'passcode.title': 'Create a<br>Passcode',
             'passcode.hint': 'This passcode will be used to unlock your Aura.',
             'passcode.rehint': 'Re-enter your passcode',
@@ -702,7 +808,7 @@
             'customize.title': 'Customize Your Aura',
             'customize.c1.title': 'Customize',
             'customize.c1.desc': 'Set up appearance, widgets, and Focus as you like.',
-            'customize.c2.title': 'Transfer from Android',
+            'customize.c2.title': 'Move from iPhone or Android',
             'customize.c2.desc': 'Move apps, messages, and photos from your old device.',
             'appsdata.title': 'Apps &amp; Data',
             'appsdata.body': 'Choose your transfer method.',
@@ -733,13 +839,39 @@
             'appearance.dark': 'Dark',
             'appearance.toast.light': 'Light appearance enabled',
             'appearance.toast.dark': 'Dark appearance enabled',
-            'welcome.title': 'Welcome to Aura',
-            'welcome.body': 'Your device is set up and ready to go. We hope you enjoy using AuraOS.',
-            'welcome.btn': 'Get Started',
+            'welcome.title': 'Welcome to AuraOS',
+            'welcome.body': 'One final step — your device needs to restart to finish installing Aura. Everything will be ready when it starts up again.',
+            'welcome.btn': 'Restart to Finish Setup',
             'hello.swipe': 'Swipe down to continue',
-            'toast.country.set': 'Set to {0}'
+            'toast.country.set': 'Set to {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Move from iPhone or Aura',
+            'move.ios.title': 'Move from iPhone or Aura',
+            'move.ios.body': 'Keep your contacts, photos, messages, and more. Place the devices side by side to transfer them directly.',
+            'move.ios.btn': 'Continue',
+            'move.ios.connecting': 'Looking for nearby devices',
+            'move.ios.found': 'Aura Found',
+            'move.android.title': 'Move Data from Android',
+            'move.android.s1': 'Open the Aura quick start on your Android device.',
+            'move.android.s2': 'Download and open the XPDevs Move app from your app store.',
+            'move.android.s3': 'On Android, tap Continue and enter the code shown on this Aura.',
+            'move.android.codeLabel': 'Enter this code to start moving',
+            'move.android.connecting': 'Searching for your Android device',
+            'move.android.found': 'Android Found',
+            'move.restore.title': 'Restore from Aura Cloud Backup',
+            'move.restore.body': 'One Aura Cloud backup is available and will be restored to this Aura.',
+            'move.restore.status': 'Preparing restore…',
+            'move.restore.ready': 'Restore Ready',
+            'move.pairing': 'Keep the devices nearby',
+            'move.pairing.done': 'Connected',
+            'move.restore.signin': 'Sign in with your Aura ID to restore from your latest Aura Cloud backup.',
+            'move.restore.goSignin': 'Sign In with Aura ID',
+            'move.restore.skip': 'Skip for Now, Sign In Later',
         },
         'de': {
+            'power.restart': 'Neustart',
+            'power.shutdown': 'Herunterfahren',
+            'power.cancel': 'Abbrechen',
             'continue': 'Fortfahren',
             'lang.title': 'Sprache',
             'wifi.title': 'Wi-Fi',
@@ -752,14 +884,6 @@
             'privacy.title': 'Daten &amp; Datenschutz',
             'privacy.body': 'Es sind deine Daten. Du entscheidest, was du teilst und was nicht.<br><br>Alles, was auf dem Gerät verarbeitet wird, bleibt auf dem Gerät.',
             'privacy.continue': 'Fortfahren &amp; Zustimmen',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Aura Face einrichten',
-            'faceid.body': 'Nutze Aura Face, um dein Aura sicher zu entsperren, Käufe zu tätigen und dich bei Apps anzumelden.',
-            'faceid.main': 'Aura Face einrichten',
-            'faceid.later': 'Später einrichten',
-            'faceid.scanning': 'Wird gescannt…',
-            'faceid.done': 'Fertig',
-            'faceid.enabled': 'Aura Face aktiviert',
             'passcode.title': 'Passcode<br>erstellen',
             'passcode.hint': 'Dieser Passcode wird zum Entsperren deines Aura verwendet.',
             'passcode.rehint': 'Passcode erneut eingeben',
@@ -768,7 +892,7 @@
             'customize.title': 'Dein Aura anpassen',
             'customize.c1.title': 'Anpassen',
             'customize.c1.desc': 'Lege Aussehen, Widgets und Fokus nach deinen Wünschen fest.',
-            'customize.c2.title': 'Von Android übertragen',
+            'customize.c2.title': 'Von iPhone oder Android übertragen',
             'customize.c2.desc': 'Verschiebe Apps, Nachrichten und Fotos von deinem alten Gerät.',
             'appsdata.title': 'Apps &amp; Daten',
             'appsdata.body': 'Wähle deine Übertragungsmethode.',
@@ -799,13 +923,39 @@
             'appearance.dark': 'Dunkel',
             'appearance.toast.light': 'Helles Aussehen aktiviert',
             'appearance.toast.dark': 'Dunkles Aussehen aktiviert',
-            'welcome.title': 'Willkommen bei Aura',
-            'welcome.body': 'Dein Gerät ist eingerichtet und einsatzbereit. Wir hoffen, dir gefällt AuraOS.',
-            'welcome.btn': 'Loslegen',
+            'welcome.title': 'Willkommen bei AuraOS',
+            'welcome.body': 'Ein letzter Schritt: Dein Gerät muss neu gestartet werden, um die Installation von Aura abzuschließen. Beim nächsten Start ist alles bereit.',
+            'welcome.btn': 'Neu starten und abschließen',
             'hello.swipe': 'Zum Fortfahren nach unten streichen',
-            'toast.country.set': 'Auf {0} eingestellt'
+            'toast.country.set': 'Auf {0} eingestellt',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Von iPhone oder Aura übertragen',
+            'move.ios.title': 'Von iPhone oder Aura übertragen',
+            'move.ios.body': 'Behalte deine Kontakte, Fotos, Nachrichten und mehr. Lege die Geräte nebeneinander, um sie direkt zu übertragen.',
+            'move.ios.btn': 'Fortfahren',
+            'move.ios.connecting': 'Geräte in der Nähe werden gesucht',
+            'move.ios.found': 'Aura gefunden',
+            'move.android.title': 'Daten von Android übertragen',
+            'move.android.s1': 'Öffne die Aura-Schnellstartfunktion auf deinem Android-Gerät.',
+            'move.android.s2': 'Lade die XPDevs Move-App aus deinem App Store herunter und öffne sie.',
+            'move.android.s3': 'Tippe auf Android auf „Fortfahren“ und gib den auf diesem Aura angezeigten Code ein.',
+            'move.android.codeLabel': 'Gib diesen Code ein, um mit der Übertragung zu beginnen',
+            'move.android.connecting': 'Dein Android-Gerät wird gesucht',
+            'move.android.found': 'Android gefunden',
+            'move.restore.title': 'Aus Aura Cloud Backup wiederherstellen',
+            'move.restore.body': 'Ein Aura-Cloud-Backup ist verfügbar und wird auf dieses Aura wiederhergestellt.',
+            'move.restore.status': 'Wiederherstellung wird vorbereitet…',
+            'move.restore.ready': 'Wiederherstellung bereit',
+            'move.pairing': 'Halte die Geräte nah beieinander',
+            'move.pairing.done': 'Verbunden',
+            'move.restore.signin': 'Melde dich mit deiner Aura ID an, um aus deinem neuesten Aura Cloud Backup wiederherzustellen.',
+            'move.restore.goSignin': 'Mit Aura ID anmelden',
+            'move.restore.skip': 'Später anmelden und jetzt überspringen',
         },
         'fr': {
+            'power.restart': 'Redémarrer',
+            'power.shutdown': 'Éteindre',
+            'power.cancel': 'Annuler',
             'continue': 'Continuer',
             'lang.title': 'Langue',
             'wifi.title': 'Wi-Fi',
@@ -818,14 +968,6 @@
             'privacy.title': 'Données et confidentialité',
             'privacy.body': 'Vos données vous appartiennent. Vous décidez quoi partager et quoi ne pas partager.<br><br>Tout ce qui est traité sur l’appareil reste sur l’appareil.',
             'privacy.continue': 'Continuer et accepter',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Configurer Aura Face',
-            'faceid.body': 'Utilisez Aura Face pour déverrouiller votre Aura en toute sécurité, effectuer des achats et vous connecter aux apps.',
-            'faceid.main': 'Configurer Aura Face',
-            'faceid.later': 'Configurer plus tard',
-            'faceid.scanning': 'Analyse…',
-            'faceid.done': 'Terminé',
-            'faceid.enabled': 'Aura Face activé',
             'passcode.title': 'Créer un<br>code',
             'passcode.hint': 'Ce code servira à déverrouiller votre Aura.',
             'passcode.rehint': 'Saisissez de nouveau votre code',
@@ -834,7 +976,7 @@
             'customize.title': 'Personnaliser votre Aura',
             'customize.c1.title': 'Personnaliser',
             'customize.c1.desc': 'Configurez l’apparence, les widgets et la concentration comme vous le souhaitez.',
-            'customize.c2.title': 'Transférer depuis Android',
+            'customize.c2.title': 'Transférer depuis iPhone ou Android',
             'customize.c2.desc': 'Déplacez les apps, les messages et les photos depuis votre ancien appareil.',
             'appsdata.title': 'Apps et données',
             'appsdata.body': 'Choisissez votre méthode de transfert.',
@@ -865,13 +1007,39 @@
             'appearance.dark': 'Sombre',
             'appearance.toast.light': 'Apparence claire activée',
             'appearance.toast.dark': 'Apparence sombre activée',
-            'welcome.title': 'Bienvenue sur Aura',
-            'welcome.body': 'Votre appareil est configuré et prêt. Nous espérons que vous apprécierez AuraOS.',
-            'welcome.btn': 'Commencer',
+            'welcome.title': 'Bienvenue sur AuraOS',
+            'welcome.body': 'Une dernière étape : votre appareil doit redémarrer pour terminer l’installation d’Aura. Tout sera prêt au prochain démarrage.',
+            'welcome.btn': 'Redémarrer pour terminer',
             'hello.swipe': 'Balayez vers le bas pour continuer',
-            'toast.country.set': 'Réglé sur {0}'
+            'toast.country.set': 'Réglé sur {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Transférer depuis iPhone ou Aura',
+            'move.ios.title': 'Transférer depuis iPhone ou Aura',
+            'move.ios.body': 'Conservez vos contacts, photos, messages et plus encore. Placez les appareils côte à côte pour les transférer directement.',
+            'move.ios.btn': 'Continuer',
+            'move.ios.connecting': 'Recherche d’appareils à proximité',
+            'move.ios.found': 'Aura trouvé',
+            'move.android.title': 'Déplacer depuis Android',
+            'move.android.s1': 'Ouvrez le démarrage rapide Aura sur votre appareil Android.',
+            'move.android.s2': 'Téléchargez et ouvrez l’app XPDevs Move depuis l’App Store.',
+            'move.android.s3': 'Sur Android, touchez Continuer et saisissez le code affiché sur cet Aura.',
+            'move.android.codeLabel': 'Saisissez ce code pour démarrer',
+            'move.android.connecting': 'Recherche de votre appareil Android',
+            'move.android.found': 'Android trouvé',
+            'move.restore.title': 'Restaurer depuis Aura Cloud Backup',
+            'move.restore.body': 'Une sauvegarde Aura Cloud est disponible et sera restaurée sur cet Aura.',
+            'move.restore.status': 'Préparation de la restauration…',
+            'move.restore.ready': 'Restauration prête',
+            'move.pairing': 'Gardez les appareils proches',
+            'move.pairing.done': 'Connecté',
+            'move.restore.signin': 'Connectez-vous avec votre identifiant Aura ID pour restaurer la sauvegarde Aura Cloud la plus récente.',
+            'move.restore.goSignin': 'Se connecter avec Aura ID',
+            'move.restore.skip': 'Ignorer pour l’instant, se connecter plus tard',
         },
         'es': {
+            'power.restart': 'Reiniciar',
+            'power.shutdown': 'Apagar',
+            'power.cancel': 'Cancelar',
             'continue': 'Continuar',
             'lang.title': 'Idioma',
             'wifi.title': 'Wi-Fi',
@@ -884,14 +1052,6 @@
             'privacy.title': 'Datos y privacidad',
             'privacy.body': 'Son tus datos. Tú decides qué compartir y qué no.<br><br>Todo lo que se procesa en el dispositivo permanece en el dispositivo.',
             'privacy.continue': 'Continuar y aceptar',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Configurar Aura Face',
-            'faceid.body': 'Usa Aura Face para desbloquear tu Aura de forma segura, hacer compras e iniciar sesión en apps.',
-            'faceid.main': 'Configurar Aura Face',
-            'faceid.later': 'Configurar más tarde',
-            'faceid.scanning': 'Analizando…',
-            'faceid.done': 'Listo',
-            'faceid.enabled': 'Aura Face activado',
             'passcode.title': 'Crear un<br>código',
             'passcode.hint': 'Este código se usará para desbloquear tu Aura.',
             'passcode.rehint': 'Vuelve a escribir tu código',
@@ -900,7 +1060,7 @@
             'customize.title': 'Personaliza tu Aura',
             'customize.c1.title': 'Personalizar',
             'customize.c1.desc': 'Configura la apariencia, los widgets y el enfoque a tu gusto.',
-            'customize.c2.title': 'Transferir desde Android',
+            'customize.c2.title': 'Transferir desde iPhone o Android',
             'customize.c2.desc': 'Mueve apps, mensajes y fotos desde tu dispositivo anterior.',
             'appsdata.title': 'Apps y datos',
             'appsdata.body': 'Elige tu método de transferencia.',
@@ -931,13 +1091,39 @@
             'appearance.dark': 'Oscuro',
             'appearance.toast.light': 'Apariencia clara activada',
             'appearance.toast.dark': 'Apariencia oscura activada',
-            'welcome.title': 'Bienvenido a Aura',
-            'welcome.body': 'Tu dispositivo está configurado y listo para usar. Esperamos que disfrutes de AuraOS.',
-            'welcome.btn': 'Empezar',
+            'welcome.title': 'Bienvenido a AuraOS',
+            'welcome.body': 'Un último paso: el dispositivo debe reiniciarse para terminar de instalar Aura. Todo estará listo cuando se vuelva a encender.',
+            'welcome.btn': 'Reiniciar para finalizar',
             'hello.swipe': 'Desliza hacia abajo para continuar',
-            'toast.country.set': 'Configurado en {0}'
+            'toast.country.set': 'Configurado en {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Transferir desde iPhone o Aura',
+            'move.ios.title': 'Transferir desde iPhone o Aura',
+            'move.ios.body': 'Conserva tus contactos, fotos, mensajes y más. Coloca los dispositivos uno al lado del otro para transferirlos directamente.',
+            'move.ios.btn': 'Continuar',
+            'move.ios.connecting': 'Buscando dispositivos cercanos',
+            'move.ios.found': 'Aura encontrado',
+            'move.android.title': 'Mover datos desde Android',
+            'move.android.s1': 'Abre el inicio rápido de Aura en tu dispositivo Android.',
+            'move.android.s2': 'Descarga y abre la app XPDevs Move desde tu tienda de aplicaciones.',
+            'move.android.s3': 'En Android, toca Continuar e ingresa el código que se muestra en este Aura.',
+            'move.android.codeLabel': 'Ingresa este código para comenzar',
+            'move.android.connecting': 'Buscando tu dispositivo Android',
+            'move.android.found': 'Android encontrado',
+            'move.restore.title': 'Restaurar desde Aura Cloud Backup',
+            'move.restore.body': 'Hay una copia de seguridad de Aura Cloud disponible y se restaurará en este Aura.',
+            'move.restore.status': 'Preparando la restauración…',
+            'move.restore.ready': 'Restauración lista',
+            'move.pairing': 'Mantén los dispositivos cerca',
+            'move.pairing.done': 'Conectado',
+            'move.restore.signin': 'Inicia sesión con tu Aura ID para restaurar desde tu copia de seguridad de Aura Cloud más reciente.',
+            'move.restore.goSignin': 'Iniciar sesión con Aura ID',
+            'move.restore.skip': 'Omitir por ahora, iniciar sesión más tarde',
         },
         'it': {
+            'power.restart': 'Riavvia',
+            'power.shutdown': 'Spegni',
+            'power.cancel': 'Annulla',
             'continue': 'Continua',
             'lang.title': 'Lingua',
             'wifi.title': 'Wi-Fi',
@@ -950,14 +1136,6 @@
             'privacy.title': 'Dati e privacy',
             'privacy.body': 'Sono i tuoi dati. Sei tu a decidere cosa condividere e cosa no.<br><br>Tutto ciò che è elaborato sul dispositivo resta sul dispositivo.',
             'privacy.continue': 'Continua e accetta',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Imposta Aura Face',
-            'faceid.body': 'Usa Aura Face per sbloccare in sicurezza il tuo Aura, effettuare acquisti e accedere alle app.',
-            'faceid.main': 'Imposta Aura Face',
-            'faceid.later': 'Imposta in seguito',
-            'faceid.scanning': 'Analisi…',
-            'faceid.done': 'Fine',
-            'faceid.enabled': 'Aura Face attivato',
             'passcode.title': 'Crea un<br>codice',
             'passcode.hint': 'Questo codice verrà usato per sbloccare il tuo Aura.',
             'passcode.rehint': 'Inserisci di nuovo il codice',
@@ -966,7 +1144,7 @@
             'customize.title': 'Personalizza il tuo Aura',
             'customize.c1.title': 'Personalizza',
             'customize.c1.desc': 'Configura aspetto, widget e concentrazione come preferisci.',
-            'customize.c2.title': 'Trasferisci da Android',
+            'customize.c2.title': 'Trasferisci da iPhone o Android',
             'customize.c2.desc': 'Sposta app, messaggi e foto dal tuo vecchio dispositivo.',
             'appsdata.title': 'App e dati',
             'appsdata.body': 'Scegli il metodo di trasferimento.',
@@ -997,13 +1175,39 @@
             'appearance.dark': 'Scuro',
             'appearance.toast.light': 'Aspetto chiaro attivato',
             'appearance.toast.dark': 'Aspetto scuro attivato',
-            'welcome.title': 'Benvenuto su Aura',
-            'welcome.body': 'Il tuo dispositivo è configurato e pronto. Speriamo che AuraOS ti piaccia.',
-            'welcome.btn': 'Inizia',
+            'welcome.title': 'Benvenuto su AuraOS',
+            'welcome.body': 'Un ultimo passo: il dispositivo deve riavviarsi per completare l’installazione di Aura. Tutto sarà pronto al prossimo avvio.',
+            'welcome.btn': 'Riavvia per completare',
             'hello.swipe': 'Scorri verso il basso per continuare',
-            'toast.country.set': 'Impostato su {0}'
+            'toast.country.set': 'Impostato su {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Trasferisci da iPhone o Aura',
+            'move.ios.title': 'Trasferisci da iPhone o Aura',
+            'move.ios.body': 'Conserva contatti, foto, messaggi e altro. Posiziona i dispositivi uno accanto all’altro per trasferirli direttamente.',
+            'move.ios.btn': 'Continua',
+            'move.ios.connecting': 'Ricerca di dispositivi vicini',
+            'move.ios.found': 'Aura trovato',
+            'move.android.title': 'Sposta dati da Android',
+            'move.android.s1': 'Apri l’avvio rapido di Aura sul tuo dispositivo Android.',
+            'move.android.s2': 'Scarica e apri l’app XPDevs Move dal tuo app store.',
+            'move.android.s3': 'Su Android, tocca Continua e inserisci il codice mostrato su questo Aura.',
+            'move.android.codeLabel': 'Inserisci questo codice per iniziare',
+            'move.android.connecting': 'Ricerca del tuo dispositivo Android',
+            'move.android.found': 'Android trovato',
+            'move.restore.title': 'Ripristina da Aura Cloud Backup',
+            'move.restore.body': 'Un backup Aura Cloud è disponibile e verrà ripristinato su questo Aura.',
+            'move.restore.status': 'Preparazione del ripristino…',
+            'move.restore.ready': 'Ripristino pronto',
+            'move.pairing': 'Tieni i dispositivi vicini',
+            'move.pairing.done': 'Connesso',
+            'move.restore.signin': 'Accedi con il tuo Aura ID per ripristinare dal tuo backup Aura Cloud più recente.',
+            'move.restore.goSignin': 'Accedi con Aura ID',
+            'move.restore.skip': 'Salta per ora, accedi più tardi',
         },
         'pt': {
+            'power.restart': 'Reiniciar',
+            'power.shutdown': 'Desligar',
+            'power.cancel': 'Cancelar',
             'continue': 'Continuar',
             'lang.title': 'Idioma',
             'wifi.title': 'Wi-Fi',
@@ -1016,14 +1220,6 @@
             'privacy.title': 'Dados e privacidade',
             'privacy.body': 'Os dados são seus. Você decide o que compartilhar e o que não compartilhar.<br><br>Tudo que é processado no aparelho permanece no aparelho.',
             'privacy.continue': 'Continuar e concordar',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Configurar Aura Face',
-            'faceid.body': 'Use o Aura Face para desbloquear seu Aura com segurança, fazer compras e entrar em apps.',
-            'faceid.main': 'Configurar Aura Face',
-            'faceid.later': 'Configurar depois',
-            'faceid.scanning': 'Analisando…',
-            'faceid.done': 'Concluído',
-            'faceid.enabled': 'Aura Face ativado',
             'passcode.title': 'Criar um<br>código',
             'passcode.hint': 'Este código será usado para desbloquear seu Aura.',
             'passcode.rehint': 'Digite novamente o código',
@@ -1032,7 +1228,7 @@
             'customize.title': 'Personalize seu Aura',
             'customize.c1.title': 'Personalizar',
             'customize.c1.desc': 'Configure a aparência, os widgets e o foco como desejar.',
-            'customize.c2.title': 'Transferir do Android',
+            'customize.c2.title': 'Transferir do iPhone ou Android',
             'customize.c2.desc': 'Mova apps, mensagens e fotos do seu aparelho antigo.',
             'appsdata.title': 'Apps e dados',
             'appsdata.body': 'Escolha seu método de transferência.',
@@ -1063,13 +1259,39 @@
             'appearance.dark': 'Escuro',
             'appearance.toast.light': 'Aparência clara ativada',
             'appearance.toast.dark': 'Aparência escura ativada',
-            'welcome.title': 'Bem-vindo ao Aura',
-            'welcome.body': 'Seu aparelho está configurado e pronto. Esperamos que você goste do AuraOS.',
-            'welcome.btn': 'Começar',
+            'welcome.title': 'Bem-vindo ao AuraOS',
+            'welcome.body': 'Uma última etapa: o dispositivo precisa reiniciar para concluir a instalação do Aura. Tudo estará pronto quando ele ligar novamente.',
+            'welcome.btn': 'Reiniciar para concluir',
             'hello.swipe': 'Deslize para baixo para continuar',
-            'toast.country.set': 'Definido para {0}'
+            'toast.country.set': 'Definido para {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Transferir do iPhone ou Aura',
+            'move.ios.title': 'Transferir do iPhone ou Aura',
+            'move.ios.body': 'Mantenha seus contatos, fotos, mensagens e muito mais. Coloque os aparelhos lado a lado para transferir diretamente.',
+            'move.ios.btn': 'Continuar',
+            'move.ios.connecting': 'Procurando aparelhos próximos',
+            'move.ios.found': 'Aura encontrado',
+            'move.android.title': 'Mover dados do Android',
+            'move.android.s1': 'Abra o início rápido do Aura no seu aparelho Android.',
+            'move.android.s2': 'Baixe e abra o app XPDevs Move na sua loja de aplicativos.',
+            'move.android.s3': 'No Android, toque em Continuar e digite o código mostrado neste Aura.',
+            'move.android.codeLabel': 'Digite este código para começar',
+            'move.android.connecting': 'Procurando seu aparelho Android',
+            'move.android.found': 'Android encontrado',
+            'move.restore.title': 'Restaurar do Aura Cloud Backup',
+            'move.restore.body': 'Um backup Aura Cloud está disponível e será restaurado neste Aura.',
+            'move.restore.status': 'Preparando a restauração…',
+            'move.restore.ready': 'Restauração pronta',
+            'move.pairing': 'Mantenha os aparelhos próximos',
+            'move.pairing.done': 'Conectado',
+            'move.restore.signin': 'Entre com seu Aura ID para restaurar do seu backup Aura Cloud mais recente.',
+            'move.restore.goSignin': 'Entrar com Aura ID',
+            'move.restore.skip': 'Pular por agora, entrar depois',
         },
         'ja': {
+            'power.restart': '再起動',
+            'power.shutdown': 'シャットダウン',
+            'power.cancel': 'キャンセル',
             'continue': '続ける',
             'lang.title': '言語',
             'wifi.title': 'Wi-Fiネットワーク',
@@ -1082,14 +1304,6 @@
             'privacy.title': 'データとプライバシー',
             'privacy.body': 'あなたのデータです。何を共有するか、何を共有しないかはあなたが決めます。デバイス上で処理されるデータは、デバイス上に留まります。',
             'privacy.continue': '続けて同意する',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Aura Face の設定',
-            'faceid.body': 'Aura Face で Aura のロック解除、購入、アプリへのサインインを安全に行えます。',
-            'faceid.main': 'Aura Face を設定',
-            'faceid.later': '後で設定',
-            'faceid.scanning': 'スキャン中…',
-            'faceid.done': '完了',
-            'faceid.enabled': 'Aura Face を有効にしました',
             'passcode.title': 'パスコードを<br>作成',
             'passcode.hint': 'このパスコードは、Aura のロック解除に使用されます。',
             'passcode.rehint': 'パスコードを再入力',
@@ -1098,7 +1312,7 @@
             'customize.title': 'Aura をカスタマイズ',
             'customize.c1.title': 'カスタマイズ',
             'customize.c1.desc': '外観、ウィジェット、集中モードをお好みで設定できます。',
-            'customize.c2.title': 'Android から移行',
+            'customize.c2.title': 'iPhone / Android から移行',
             'customize.c2.desc': '以前のデバイスからアプリ、メッセージ、写真を移行します。',
             'appsdata.title': 'App とデータ',
             'appsdata.body': '移行方法を選択してください。',
@@ -1129,13 +1343,39 @@
             'appearance.dark': 'ダーク',
             'appearance.toast.light': 'ライトの外観を有効にしました',
             'appearance.toast.dark': 'ダークの外観を有効にしました',
-            'welcome.title': 'Aura へようこそ',
-            'welcome.body': 'デバイスの設定が完了しました。AuraOS をお楽しみください。',
-            'welcome.btn': 'はじめる',
+            'welcome.title': 'AuraOS へようこそ',
+            'welcome.body': '最後のステップです。Aura のインストールを完了するため、デバイスを再起動する必要があります。次回起動時にすべての準備が整います。',
+            'welcome.btn': '再起動して完了',
             'hello.swipe': '下にスワイプして続ける',
-            'toast.country.set': '{0} に設定しました'
+            'toast.country.set': '{0} に設定しました',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'iPhone または Aura から移行',
+            'move.ios.title': 'iPhone または Aura から移行',
+            'move.ios.body': '連絡先、写真、メッセージなどを保持します。デバイスを並べて直接転送します。',
+            'move.ios.btn': '続ける',
+            'move.ios.connecting': '近くのデバイスを探しています',
+            'move.ios.found': 'Aura を発見しました',
+            'move.android.title': 'Android からデータを移行',
+            'move.android.s1': 'Android デバイスで Aura のクイックスタートを開きます。',
+            'move.android.s2': 'アプリストアから XPDevs Move アプリをダウンロードして開きます。',
+            'move.android.s3': 'Android で「続ける」をタップし、この Aura に表示されたコードを入力します。',
+            'move.android.codeLabel': 'このコードを入力して開始します',
+            'move.android.connecting': 'Android デバイスを探しています',
+            'move.android.found': 'Android を発見しました',
+            'move.restore.title': 'Aura Cloud バックアップから復元',
+            'move.restore.body': 'Aura Cloud バックアップが 1 つあり、この Aura に復元されます。',
+            'move.restore.status': '復元を準備しています…',
+            'move.restore.ready': '復元の準備ができました',
+            'move.pairing': 'デバイスを近くに置いてください',
+            'move.pairing.done': '接続しました',
+            'move.restore.signin': '最新の Aura Cloud バックアップから復元するには、Aura ID でサインインしてください。',
+            'move.restore.goSignin': 'Aura ID でサインイン',
+            'move.restore.skip': 'しばらくスキップして、後でサインイン',
         },
         'ko': {
+            'power.restart': '다시 시작',
+            'power.shutdown': '종료',
+            'power.cancel': '취소',
             'continue': '계속하기',
             'lang.title': '언어',
             'wifi.title': 'Wi-Fi',
@@ -1148,14 +1388,6 @@
             'privacy.title': '데이터 및 개인정보 보호',
             'privacy.body': '이것은 나의 데이터입니다. 무엇을 공유할지, 무엇을 공유하지 않을지는 사용자가 결정합니다.<br><br>기기에서 처리되는 모든 것은 기기에 그대로 남습니다.',
             'privacy.continue': '계속 및 동의',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Aura Face 설정',
-            'faceid.body': 'Aura Face를 사용하여 Aura를 안전하게 잠금 해제하고 구매하며 앱에 로그인하십시오.',
-            'faceid.main': 'Aura Face 설정',
-            'faceid.later': '나중에 설정',
-            'faceid.scanning': '스캔 중…',
-            'faceid.done': '완료',
-            'faceid.enabled': 'Aura Face가 활성화되었습니다',
             'passcode.title': '암호<br>생성',
             'passcode.hint': '이 암호는 Aura 잠금 해제에 사용됩니다.',
             'passcode.rehint': '암호를 다시 입력하십시오',
@@ -1164,7 +1396,7 @@
             'customize.title': '나만의 Aura 꾸미기',
             'customize.c1.title': '사용자화',
             'customize.c1.desc': '좋아하는 대로 모양, 위젯, 집중 모드를 설정하십시오.',
-            'customize.c2.title': 'Android에서 전송',
+            'customize.c2.title': 'iPhone 또는 Android에서 전송',
             'customize.c2.desc': '이전 기기에서 앱, 메시지, 사진을 옮기십시오.',
             'appsdata.title': '앱 및 데이터',
             'appsdata.body': '전송 방법을 선택하십시오.',
@@ -1195,13 +1427,39 @@
             'appearance.dark': '다크',
             'appearance.toast.light': '라이트 외관이 활성화되었습니다',
             'appearance.toast.dark': '다크 외관이 활성화되었습니다',
-            'welcome.title': 'Aura에 오신 것을 환영합니다',
-            'welcome.body': '기기가 설정되어 사용할 준비가 되었습니다. AuraOS를 즐기시기 바랍니다.',
-            'welcome.btn': '시작하기',
+            'welcome.title': 'AuraOS에 오신 것을 환영합니다',
+            'welcome.body': '마지막 단계입니다. Aura 설치를 완료하려면 기기를 다시 시작해야 합니다. 다시 시작하면 모든 준비가 완료됩니다.',
+            'welcome.btn': '다시 시작하여 완료',
             'hello.swipe': '계속하려면 아래로 스와이프하십시오',
-            'toast.country.set': '{0}(으)로 설정됨'
+            'toast.country.set': '{0}(으)로 설정됨',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'iPhone 또는 Aura에서 전송',
+            'move.ios.title': 'iPhone 또는 Aura에서 전송',
+            'move.ios.body': '연락처, 사진, 메시지 등을 유지하십시오. 기기를 나란히 놓으면 직접 전송됩니다.',
+            'move.ios.btn': '계속하기',
+            'move.ios.connecting': '주변 기기를 찾는 중',
+            'move.ios.found': 'Aura를 찾았습니다',
+            'move.android.title': 'Android에서 데이터 옮기기',
+            'move.android.s1': 'Android 기기에서 Aura 빠른 시작을 여십시오.',
+            'move.android.s2': '앱 스토어에서 XPDevs Move 앱을 다운로드하여 여십시오.',
+            'move.android.s3': 'Android에서 계속하기를 탭하고 이 Aura에 표시된 코드를 입력하십시오.',
+            'move.android.codeLabel': '시작하려면 이 코드를 입력하십시오',
+            'move.android.connecting': 'Android 기기를 찾는 중',
+            'move.android.found': 'Android를 찾았습니다',
+            'move.restore.title': 'Aura Cloud 백업에서 복원',
+            'move.restore.body': 'Aura Cloud 백업이 하나 있으며 이 Aura에 복원됩니다.',
+            'move.restore.status': '복원 준비 중…',
+            'move.restore.ready': '복원 준비 완료',
+            'move.pairing': '기기를 서로 가까이 두십시오',
+            'move.pairing.done': '연결됨',
+            'move.restore.signin': '최신 Aura Cloud 백업에서 복원하려면 Aura ID로 로그인하십시오.',
+            'move.restore.goSignin': 'Aura ID로 로그인',
+            'move.restore.skip': '지금 건너뛰고 나중에 로그인',
         },
         'zh-Hans': {
+            'power.restart': '重新启动',
+            'power.shutdown': '关机',
+            'power.cancel': '取消',
             'continue': '继续',
             'lang.title': '语言',
             'wifi.title': '无线局域网',
@@ -1214,14 +1472,6 @@
             'privacy.title': '数据与隐私',
             'privacy.body': '这是你的数据。决定分享哪些、不分享哪些都由你做主。所有在设备上处理的数据都会留在设备上。',
             'privacy.continue': '继续并同意',
-            'faceid.name': 'Aura Face',
-            'faceid.title': '设置 Aura Face',
-            'faceid.body': '使用 Aura Face 安全解锁你的 Aura、进行购买并登录应用。',
-            'faceid.main': '设置 Aura Face',
-            'faceid.later': '稍后设置',
-            'faceid.scanning': '正在扫描…',
-            'faceid.done': '完成',
-            'faceid.enabled': '已启用 Aura Face',
             'passcode.title': '创建<br>密码',
             'passcode.hint': '此密码将用于解锁你的 Aura。',
             'passcode.rehint': '重新输入密码',
@@ -1230,7 +1480,7 @@
             'customize.title': '自定你的 Aura',
             'customize.c1.title': '自定',
             'customize.c1.desc': '按你的喜好设置外观、小组件和专注模式。',
-            'customize.c2.title': '从安卓设备传输',
+            'customize.c2.title': '从 iPhone 或安卓设备传输',
             'customize.c2.desc': '从旧设备移动应用、信息和照片。',
             'appsdata.title': '应用与数据',
             'appsdata.body': '选择传输方法。',
@@ -1261,13 +1511,39 @@
             'appearance.dark': '深色',
             'appearance.toast.light': '已启用浅色外观',
             'appearance.toast.dark': '已启用深色外观',
-            'welcome.title': '欢迎使用 Aura',
-            'welcome.body': '你的设备已设置完毕，随时可以使用。希望你喜欢 AuraOS。',
-            'welcome.btn': '开始使用',
+            'welcome.title': '欢迎使用 AuraOS',
+            'welcome.body': '最后一步：设备需要重新启动以完成 Aura 的安装。再次启动后，一切就绪。',
+            'welcome.btn': '重启以完成设置',
             'hello.swipe': '向下轻扫以继续',
-            'toast.country.set': '已设为 {0}'
+            'toast.country.set': '已设为 {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': '从 iPhone 或 Aura 传输',
+            'move.ios.title': '从 iPhone 或 Aura 传输',
+            'move.ios.body': '保留你的通讯录、照片、信息和更多内容。将两台设备放在一起即可直接传输。',
+            'move.ios.btn': '继续',
+            'move.ios.connecting': '正在查找附近的设备',
+            'move.ios.found': '已找到 Aura',
+            'move.android.title': '从安卓设备移入数据',
+            'move.android.s1': '在安卓设备上打开 Aura“快速开始”。',
+            'move.android.s2': '从应用商店下载并打开 XPDevs Move 应用。',
+            'move.android.s3': '在安卓设备上轻点“继续”，然后输入此 Aura 上显示的代码。',
+            'move.android.codeLabel': '输入此代码以开始传输',
+            'move.android.connecting': '正在查找你的安卓设备',
+            'move.android.found': '已找到安卓设备',
+            'move.restore.title': '从 Aura 云备份恢复',
+            'move.restore.body': '有一个 Aura 云备份可以使用，将恢复到这台 Aura。',
+            'move.restore.status': '正在准备恢复…',
+            'move.restore.ready': '恢复准备就绪',
+            'move.pairing': '让设备彼此靠近',
+            'move.pairing.done': '已连接',
+            'move.restore.signin': '登录你的 Aura ID，以从最新的 Aura 云备份恢复。',
+            'move.restore.goSignin': '使用 Aura ID 登录',
+            'move.restore.skip': '暂时跳过，稍后登录',
         },
         'ar': {
+            'power.restart': 'إعادة تشغيل',
+            'power.shutdown': 'إيقاف تشغيل',
+            'power.cancel': 'إلغاء',
             'continue': 'متابعة',
             'lang.title': 'اللغة',
             'wifi.title': 'شبكات Wi-Fi',
@@ -1280,14 +1556,6 @@
             'privacy.title': 'البيانات والخصوصية',
             'privacy.body': 'إنها بياناتك. أنت من يقرر ما تشاركه وما لا تشاركه.<br><br>كل ما تتم معالجته على الجهاز يبقى على الجهاز.',
             'privacy.continue': 'متابعة والموافقة',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'إعداد Aura Face',
-            'faceid.body': 'استخدم Aura Face لفتح Aura الخاص بك بأمان، وإجراء عمليات الشراء، وتسجيل الدخول إلى التطبيقات.',
-            'faceid.main': 'إعداد Aura Face',
-            'faceid.later': 'الإعداد لاحقًا',
-            'faceid.scanning': 'جارٍ المسح…',
-            'faceid.done': 'تم',
-            'faceid.enabled': 'تم تفعيل Aura Face',
             'passcode.title': 'إنشاء<br>رمز مرور',
             'passcode.hint': 'سيُستخدم هذا الرمز لفتح جهاز Aura الخاص بك.',
             'passcode.rehint': 'أعد إدخال رمز المرور',
@@ -1296,7 +1564,7 @@
             'customize.title': 'تخصيص جهاز Aura الخاص بك',
             'customize.c1.title': 'تخصيص',
             'customize.c1.desc': 'عيّن المظهر والودجات ووضع التركيز كما تريد.',
-            'customize.c2.title': 'نقل من أندرويد',
+            'customize.c2.title': 'النقل من iPhone أو أندرويد',
             'customize.c2.desc': 'انقل التطبيقات والرسائل والصور من جهازك القديم.',
             'appsdata.title': 'التطبيقات والبيانات',
             'appsdata.body': 'اختر طريقة النقل.',
@@ -1327,13 +1595,39 @@
             'appearance.dark': 'داكن',
             'appearance.toast.light': 'تم تفعيل المظهر الفاتح',
             'appearance.toast.dark': 'تم تفعيل المظهر الداكن',
-            'welcome.title': 'مرحبًا بك في Aura',
-            'welcome.body': 'تم إعداد جهازك وهو جاهز للاستخدام. نأمل أن تستمتع بـ AuraOS.',
-            'welcome.btn': 'ابدأ',
+            'welcome.title': 'مرحبًا بك في AuraOS',
+            'welcome.body': 'خطوة أخيرة: يجب إعادة تشغيل الجهاز لإكمال تثبيت Aura. سيكون كل شيء جاهزًا عند تشغيله مرة أخرى.',
+            'welcome.btn': 'إعادة تشغيل للإتمام',
             'hello.swipe': 'مرّر لأسفل للمتابعة',
-            'toast.country.set': 'تم التعيين على {0}'
+            'toast.country.set': 'تم التعيين على {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'النقل من iPhone أو Aura',
+            'move.ios.title': 'النقل من iPhone أو Aura',
+            'move.ios.body': 'احتفظ بجهات الاتصال والصور والرسائل والمزيد. ضع الجهازين جنبًا إلى جنب لنقل البيانات مباشرة.',
+            'move.ios.btn': 'متابعة',
+            'move.ios.connecting': 'جارٍ البحث عن الأجهزة القريبة',
+            'move.ios.found': 'تم العثور على Aura',
+            'move.android.title': 'نقل البيانات من أندرويد',
+            'move.android.s1': 'افتح البدء السريع لـ Aura على جهاز أندرويد الخاص بك.',
+            'move.android.s2': 'حمّل وافتح تطبيق XPDevs Move من متجر التطبيقات.',
+            'move.android.s3': 'على أندرويد، انقر متابعة وأدخل الرمز المعروض على هذا الجهاز Aura.',
+            'move.android.codeLabel': 'أدخل هذا الرمز لبدء النقل',
+            'move.android.connecting': 'جارٍ البحث عن جهاز أندرويد الخاص بك',
+            'move.android.found': 'تم العثور على أندرويد',
+            'move.restore.title': 'الاستعادة من نسخة Aura Cloud الاحتياطية',
+            'move.restore.body': 'توجد نسخة احتياطية من Aura Cloud وستتم استعادتها إلى هذا الجهاز.',
+            'move.restore.status': 'جارٍ تحضير الاستعادة…',
+            'move.restore.ready': 'الاستعادة جاهزة',
+            'move.pairing': 'أبقِ الأجهزة قريبة من بعضها',
+            'move.pairing.done': 'تم الاتصال',
+            'move.restore.signin': 'سجّل الدخول باستخدام Aura ID لاستعادة أحدث نسخة احتياطية من Aura Cloud.',
+            'move.restore.goSignin': 'تسجيل الدخول باستخدام Aura ID',
+            'move.restore.skip': 'تخطي الآن، تسجيل الدخول لاحقًا',
         },
         'ru': {
+            'power.restart': 'Перезапустить',
+            'power.shutdown': 'Завершить работу',
+            'power.cancel': 'Отмена',
             'continue': 'Продолжить',
             'lang.title': 'Язык',
             'wifi.title': 'Wi-Fi',
@@ -1346,14 +1640,6 @@
             'privacy.title': 'Данные и конфиденциальность',
             'privacy.body': 'Это ваши данные. Вы решаете, чем делиться, а чем нет.<br><br>Всё, что обрабатывается на устройстве, остаётся на устройстве.',
             'privacy.continue': 'Продолжить и принять',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Настройка Aura Face',
-            'faceid.body': 'Используйте Aura Face для безопасной разблокировки Aura, совершения покупок и входа в приложения.',
-            'faceid.main': 'Настроить Aura Face',
-            'faceid.later': 'Настроить позже',
-            'faceid.scanning': 'Сканирование…',
-            'faceid.done': 'Готово',
-            'faceid.enabled': 'Aura Face включен',
             'passcode.title': 'Создание<br>кода',
             'passcode.hint': 'Этот код будет использоваться для разблокировки вашего Aura.',
             'passcode.rehint': 'Введите код повторно',
@@ -1362,7 +1648,7 @@
             'customize.title': 'Настройте свой Aura',
             'customize.c1.title': 'Настроить',
             'customize.c1.desc': 'Настройте внешний вид, виджеты и Режим фокусирования по своему вкусу.',
-            'customize.c2.title': 'Перенос с Android',
+            'customize.c2.title': 'Перенос с iPhone или Android',
             'customize.c2.desc': 'Перенесите приложения, сообщения и фото со старого устройства.',
             'appsdata.title': 'Программы и данные',
             'appsdata.body': 'Выберите способ переноса.',
@@ -1393,13 +1679,39 @@
             'appearance.dark': 'Тёмное',
             'appearance.toast.light': 'Включено светлое оформление',
             'appearance.toast.dark': 'Включено тёмное оформление',
-            'welcome.title': 'Добро пожаловать в Aura',
-            'welcome.body': 'Ваше устройство настроено и готово к работе. Надеемся, вам понравится AuraOS.',
-            'welcome.btn': 'Начать',
+            'welcome.title': 'Добро пожаловать в AuraOS',
+            'welcome.body': 'Последний шаг: устройству потребуется перезагрузка, чтобы завершить установку Aura. Всё будет готово после следующего запуска.',
+            'welcome.btn': 'Перезагрузить и завершить',
             'hello.swipe': 'Смахните вниз, чтобы продолжить',
-            'toast.country.set': 'Установлен язык: {0}'
+            'toast.country.set': 'Установлен язык: {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Перенос с iPhone или Aura',
+            'move.ios.title': 'Перенос с iPhone или Aura',
+            'move.ios.body': 'Сохраните контакты, фото, сообщения и другое. Разместите устройства рядом для прямого переноса.',
+            'move.ios.btn': 'Продолжить',
+            'move.ios.connecting': 'Поиск расположенных рядом устройств',
+            'move.ios.found': 'Aura найден',
+            'move.android.title': 'Перенести данные с Android',
+            'move.android.s1': 'Откройте Быстрое начало Aura на устройстве Android.',
+            'move.android.s2': 'Скачайте и откройте приложение XPDevs Move из магазина приложений.',
+            'move.android.s3': 'На Android нажмите «Продолжить» и введите код, показанный на этом Aura.',
+            'move.android.codeLabel': 'Введите этот код, чтобы начать',
+            'move.android.connecting': 'Поиск вашего устройства Android',
+            'move.android.found': 'Android найден',
+            'move.restore.title': 'Восстановить из резервной копии Aura Cloud',
+            'move.restore.body': 'Доступна одна резервная копия Aura Cloud, и она будет восстановлена на этом Aura.',
+            'move.restore.status': 'Подготовка восстановления…',
+            'move.restore.ready': 'Восстановление готово',
+            'move.pairing': 'Держите устройства рядом',
+            'move.pairing.done': 'Подключено',
+            'move.restore.signin': 'Войдите со своим Aura ID, чтобы восстановить из последней резервной копии Aura Cloud.',
+            'move.restore.goSignin': 'Войти с Aura ID',
+            'move.restore.skip': 'Пропустить сейчас, войти позже',
         },
         'vi': {
+            'power.restart': 'Khởi động lại',
+            'power.shutdown': 'Tắt máy',
+            'power.cancel': 'Hủy',
             'continue': 'Tiếp tục',
             'lang.title': 'Ngôn ngữ',
             'wifi.title': 'Wi-Fi',
@@ -1412,14 +1724,6 @@
             'privacy.title': 'Dữ liệu &amp; Quyền riêng tư',
             'privacy.body': 'Đây là dữ liệu của bạn. Bạn quyết định chia sẻ gì và không chia sẻ gì.<br><br>Mọi thứ được xử lý trên thiết bị sẽ nằm trên thiết bị.',
             'privacy.continue': 'Tiếp tục và đồng ý',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Thiết lập Aura Face',
-            'faceid.body': 'Dùng Aura Face để mở khóa Aura một cách an toàn, mua hàng và đăng nhập vào các ứng dụng.',
-            'faceid.main': 'Thiết lập Aura Face',
-            'faceid.later': 'Thiết lập sau',
-            'faceid.scanning': 'Đang quét…',
-            'faceid.done': 'Xong',
-            'faceid.enabled': 'Đã bật Aura Face',
             'passcode.title': 'Tạo<br>Mật mã',
             'passcode.hint': 'Mật mã này sẽ được dùng để mở khóa Aura của bạn.',
             'passcode.rehint': 'Nhập lại mật mã',
@@ -1428,7 +1732,7 @@
             'customize.title': 'Tùy chỉnh Aura của bạn',
             'customize.c1.title': 'Tùy chỉnh',
             'customize.c1.desc': 'Thiết lập giao diện, tiện ích và Chế độ lấy nét theo ý bạn.',
-            'customize.c2.title': 'Chuyển từ Android',
+            'customize.c2.title': 'Chuyển từ iPhone hoặc Android',
             'customize.c2.desc': 'Chuyển ứng dụng, tin nhắn và ảnh từ thiết bị cũ của bạn.',
             'appsdata.title': 'Ứng dụng &amp; Dữ liệu',
             'appsdata.body': 'Chọn phương thức chuyển của bạn.',
@@ -1459,13 +1763,39 @@
             'appearance.dark': 'Tối',
             'appearance.toast.light': 'Đã bật giao diện sáng',
             'appearance.toast.dark': 'Đã bật giao diện tối',
-            'welcome.title': 'Chào mừng đến với Aura',
-            'welcome.body': 'Thiết bị của bạn đã được thiết lập và sẵn sàng sử dụng. Chúng tôi hy vọng bạn thích AuraOS.',
-            'welcome.btn': 'Bắt đầu',
+            'welcome.title': 'Chào mừng đến với AuraOS',
+            'welcome.body': 'Một bước cuối cùng: thiết bị cần khởi động lại để hoàn tất cài đặt Aura. Mọi thứ sẽ sẵn sàng khi thiết bị khởi động lại.',
+            'welcome.btn': 'Khởi động lại để hoàn tất',
             'hello.swipe': 'Vuốt xuống để tiếp tục',
-            'toast.country.set': 'Đã đặt thành {0}'
+            'toast.country.set': 'Đã đặt thành {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Chuyển từ iPhone hoặc Aura',
+            'move.ios.title': 'Chuyển từ iPhone hoặc Aura',
+            'move.ios.body': 'Giữ danh bạ, ảnh, tin nhắn và nhiều hơn nữa. Đặt hai thiết bị cạnh nhau để chuyển trực tiếp.',
+            'move.ios.btn': 'Tiếp tục',
+            'move.ios.connecting': 'Đang tìm thiết bị ở gần',
+            'move.ios.found': 'Đã tìm thấy Aura',
+            'move.android.title': 'Chuyển dữ liệu từ Android',
+            'move.android.s1': 'Mở khởi động nhanh Aura trên thiết bị Android của bạn.',
+            'move.android.s2': 'Tải và mở ứng dụng XPDevs Move từ cửa hàng ứng dụng của bạn.',
+            'move.android.s3': 'Trên Android, chạm Tiếp tục và nhập mã hiển thị trên Aura này.',
+            'move.android.codeLabel': 'Nhập mã này để bắt đầu',
+            'move.android.connecting': 'Đang tìm thiết bị Android của bạn',
+            'move.android.found': 'Đã tìm thấy Android',
+            'move.restore.title': 'Khôi phục từ Bản sao lưu Aura Cloud',
+            'move.restore.body': 'Có một bản sao lưu Aura Cloud và sẽ được khôi phục trên Aura này.',
+            'move.restore.status': 'Đang chuẩn bị khôi phục…',
+            'move.restore.ready': 'Sẵn sàng khôi phục',
+            'move.pairing': 'Giữ các thiết bị ở gần nhau',
+            'move.pairing.done': 'Đã kết nối',
+            'move.restore.signin': 'Đăng nhập bằng Aura ID của bạn để khôi phục từ bản sao lưu Aura Cloud mới nhất.',
+            'move.restore.goSignin': 'Đăng nhập bằng Aura ID',
+            'move.restore.skip': 'Bỏ qua ngay bây giờ, đăng nhập sau',
         },
         'el': {
+            'power.restart': 'Επανεκκίνηση',
+            'power.shutdown': 'Κλείσιμο',
+            'power.cancel': 'Ακύρωση',
             'continue': 'Συνέχεια',
             'lang.title': 'Γλώσσα',
             'wifi.title': 'Wi-Fi',
@@ -1478,14 +1808,6 @@
             'privacy.title': 'Δεδομένα και απόρρητο',
             'privacy.body': 'Είναι τα δεδομένα σας. Εσείς αποφασίζετε τι θα μοιράζεστε και τι όχι.<br><br>Ό,τι επεξεργάζεται στη συσκευή παραμένει στη συσκευή.',
             'privacy.continue': 'Συνέχεια και συμφωνία',
-            'faceid.name': 'Aura Face',
-            'faceid.title': 'Ρύθμιση Aura Face',
-            'faceid.body': 'Χρησιμοποιήστε το Aura Face για να ξεκλειδώνετε με ασφάλεια το Aura, να πραγματοποιείτε αγορές και να συνδέεστε σε εφαρμογές.',
-            'faceid.main': 'Ρύθμιση Aura Face',
-            'faceid.later': 'Ρύθμιση αργότερα',
-            'faceid.scanning': 'Σάρωση…',
-            'faceid.done': 'Τέλος',
-            'faceid.enabled': 'Το Aura Face ενεργοποιήθηκε',
             'passcode.title': 'Δημιουργία<br>κωδικού',
             'passcode.hint': 'Αυτός ο κωδικός θα χρησιμοποιείται για το ξεκλείδωμα του Aura σας.',
             'passcode.rehint': 'Εισαγάγετε ξανά τον κωδικό',
@@ -1494,7 +1816,7 @@
             'customize.title': 'Προσαρμογή του Aura σας',
             'customize.c1.title': 'Προσαρμογή',
             'customize.c1.desc': 'Ρυθμίστε την εμφάνιση, τα widget και την Εστίαση όπως θέλετε.',
-            'customize.c2.title': 'Μεταφορά από Android',
+            'customize.c2.title': 'Μεταφορά από iPhone ή Android',
             'customize.c2.desc': 'Μεταφέρετε εφαρμογές, μηνύματα και φωτογραφίες από την παλιά σας συσκευή.',
             'appsdata.title': 'Εφαρμογές και δεδομένα',
             'appsdata.body': 'Επιλέξτε τη μέθοδο μεταφοράς σας.',
@@ -1525,12 +1847,35 @@
             'appearance.dark': 'Σκούρο',
             'appearance.toast.light': 'Ενεργοποιήθηκε η ανοιχτή εμφάνιση',
             'appearance.toast.dark': 'Ενεργοποιήθηκε η σκούρη εμφάνιση',
-            'welcome.title': 'Καλώς ήλθατε στο Aura',
-            'welcome.body': 'Η συσκευή σας είναι έτοιμη. Ελπίζουμε να απολαύσετε το AuraOS.',
-            'welcome.btn': 'Έναρξη',
+            'welcome.title': 'Καλώς ήλθατε στο AuraOS',
+            'welcome.body': 'Ένα τελευταίο βήμα: η συσκευή πρέπει να επανεκκινήσει για να ολοκληρωθεί η εγκατάσταση του Aura. Όλα θα είναι έτοιμα κατά την επόμενη εκκίνηση.',
+            'welcome.btn': 'Επανεκκίνηση για ολοκλήρωση',
             'hello.swipe': 'Σύρετε προς τα κάτω για να συνεχίσετε',
-            'toast.country.set': 'Ορίστηκε σε {0}'
-        }
+            'toast.country.set': 'Ορίστηκε σε {0}',
+            'express.assist': 'Aura Assistant',
+            'appsdata.r0': 'Μεταφορά από iPhone ή Aura',
+            'move.ios.title': 'Μεταφορά από iPhone ή Aura',
+            'move.ios.body': 'Διατηρήστε επαφές, φωτογραφίες, μηνύματα και άλλα. Τοποθετήστε τις συσκευές δίπλα-δίπλα για άμεση μεταφορά.',
+            'move.ios.btn': 'Συνέχεια',
+            'move.ios.connecting': 'Αναζήτηση κοντινών συσκευών',
+            'move.ios.found': 'Το Aura βρέθηκε',
+            'move.android.title': 'Μεταφορά δεδομένων από Android',
+            'move.android.s1': 'Ανοίξτε τη γρήγορη ρύθμιση Aura στη συσκευή Android σας.',
+            'move.android.s2': 'Κατεβάστε και ανοίξτε την εφαρμογή XPDevs Move από το κατάστημα εφαρμογών.',
+            'move.android.s3': 'Στο Android, πατήστε Συνέχεια και εισαγάγετε τον κωδικό που εμφανίζεται σε αυτό το Aura.',
+            'move.android.codeLabel': 'Εισαγάγετε αυτόν τον κωδικό για να ξεκινήσετε',
+            'move.android.connecting': 'Αναζήτηση της συσκευής Android σας',
+            'move.android.found': 'Το Android βρέθηκε',
+            'move.restore.title': 'Επαναφορά από Aura Cloud Backup',
+            'move.restore.body': 'Υπάρχει ένα αντίγραφο Aura Cloud και θα επαναφερθεί σε αυτό το Aura.',
+            'move.restore.status': 'Προετοιμασία επαναφοράς…',
+            'move.restore.ready': 'Η επαναφορά είναι έτοιμη',
+            'move.pairing': 'Κρατήστε τις συσκευές κοντά',
+            'move.pairing.done': 'Συνδέθηκε',
+            'move.restore.signin': 'Συνδεθείτε με το Aura ID σας για επαναφορά από το πιο πρόσφατο αντίγραφο Aura Cloud.',
+            'move.restore.goSignin': 'Σύνδεση με Aura ID',
+            'move.restore.skip': 'Παράβλεψη τώρα, σύνδεση αργότερα',
+        },
     };
     let curLang = 'en';
     function t(key, val) {
@@ -1551,16 +1896,22 @@
     }
 
     let hist = [];
+    let restoreFlow = 'none';
 
     function show(id) {
         screens.forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         const isHello = id === 's-hello';
         if (isHello) enterHello();
+        if (id === 's-move-android') startAndroidCode();
+        if (id === 's-restore') protectRestore();
+        if (id === 's-terms') resetTerms();
         statusbar.style.opacity = isHello ? '0' : '1';
         statusbar.style.color = phone.classList.contains('dark') ? '#fff' : '#000';
+        applyStatusTheme();
         statusbar.style.transition = 'opacity 0.4s';
         backbar.classList.toggle('show', hist.length > 0);
+        powerBtn.classList.toggle('hidden', isHello || id === 's-welcome');
         window.scrollTo(0, 0);
     }
 
@@ -1572,7 +1923,11 @@
         if (!hist.length) return;
         const target = hist.pop();
         show(target);
-        if (target === 's-wifi') document.getElementById('wifi-continue').disabled = true;
+        if (target === 's-wifi') {
+            joined = false;
+            document.getElementById('wifi-continue').disabled = true;
+            updateStatusIcons();
+        }
     }
     function currentId() {
         const a = document.querySelector('.screen.active');
@@ -1585,10 +1940,6 @@
         applyLang(row.getAttribute('data-lang'));
         showToast(t('toast.country.set', row.textContent));
     }
-    function pickRow(row) {
-        row.parentElement.querySelectorAll('.row').forEach(r => r.classList.remove('selected'));
-        row.classList.add('selected');
-    }
     function pickCard(c) {
         c.parentElement.querySelectorAll('.card').forEach(x => x.classList.remove('selected'));
         c.classList.add('selected');
@@ -1599,6 +1950,7 @@
         const dark = x.classList.contains('dark');
         phone.classList.toggle('dark', dark);
         statusbar.style.color = dark ? '#fff' : '#000';
+        applyStatusTheme();
         showToast(dark ? t('appearance.toast.dark') : t('appearance.toast.light'));
     }
     function toggle(sw) { sw.classList.toggle('on'); }
@@ -1612,6 +1964,14 @@
         toastTimer = setTimeout(() => tEl.classList.remove('show'), 1600);
     }
 
+    /* block interaction behind overlays */
+    function setOverlay(open) {
+        phone.classList.toggle('overlay-open', open);
+        [document.querySelector('main'), backbar, powerBtn, statusbar].forEach(el => {
+            if (el) el.inert = !!open;
+        });
+    }
+
     /* wifi */
     let joined = false;
     function joinWifi(row) {
@@ -1619,41 +1979,19 @@
         const name = row.textContent;
         document.getElementById('joinLabel').textContent = t('wifi.joining', name);
         document.getElementById('joinOverlay').classList.add('show');
+        setOverlay(true);
         document.getElementById('joinSub').textContent = t('wifi.connecting');
         setTimeout(() => {
             document.getElementById('joinSub').textContent = t('wifi.connected');
             showToast(t('wifi.connected.toast', name));
             setTimeout(() => {
                 document.getElementById('joinOverlay').classList.remove('show');
+                setOverlay(false);
                 joined = true;
+                updateStatusIcons();
                 document.getElementById('wifi-continue').disabled = false;
             }, 500);
         }, 1800);
-    }
-
-    /* face id */
-    function startFaceScan() {
-        const ring = document.querySelector('#s-faceid .face-ring');
-        const btn = document.getElementById('faceid-main');
-        btn.textContent = t('faceid.scanning');
-        btn.disabled = true;
-        ring.style.animation = 'none';
-        let deg = 0;
-        const scan = setInterval(() => {
-            deg = (deg + 3) % 360;
-            ring.style.borderColor = 'transparent';
-            ring.style.borderTopColor = '#007AFF';
-            ring.style.transform = 'rotate(' + deg + 'deg)';
-        }, 16);
-        setTimeout(() => {
-            clearInterval(scan);
-            ring.style.transform = 'rotate(0deg)';
-            ring.style.borderColor = '#34C759';
-            ring.style.borderTopColor = '#34C759';
-            btn.textContent = t('faceid.done');
-            showToast(t('faceid.enabled'));
-            setTimeout(() => next('s-passcode'), 800);
-        }, 2200);
     }
 
     /* passcode */
@@ -1700,7 +2038,7 @@
                     if (arraysEqual(confirmSaved, passcode)) {
                         showToast(t('passcode.ok'));
                         resetPass();
-                        setTimeout(() => next('s-customize'), 600);
+                        setTimeout(() => next('s-auraid'), 600);
                     } else {
                         showToast(t('passcode.mismatch'));
                         resetPass();
@@ -1722,6 +2060,131 @@
         spans.forEach((s, i) => s.classList.toggle('filled', i < passcode.length));
     }
 
+    /* move data */
+    let codeTimer = null;
+    function startAndroidCode() {
+        const el = document.getElementById('moveCode');
+        if (!el) return;
+        clearInterval(codeTimer);
+        codeTimer = null;
+        el.classList.remove('ready');
+        el.classList.add('scrambling');
+        let ticks = 10;
+        const gen = () => { el.textContent = String(Math.floor(Math.random() * 1e6)).padStart(6, '0').split('').join(' '); };
+        gen();
+        codeTimer = setInterval(() => {
+            gen();
+            if (--ticks <= 0) {
+                clearInterval(codeTimer);
+                codeTimer = null;
+                el.classList.remove('scrambling');
+                el.classList.add('ready');
+            }
+        }, 220);
+    }
+    let restoreTimer = null;
+    function protectRestore() {
+        if (restoreFlow === 'signed') { startRestore(); return; }
+        const signin = document.getElementById('restore-signin');
+        const progress = document.getElementById('restoreProgress');
+        const btn = document.getElementById('restore-btn');
+        const skip = document.getElementById('restore-skip');
+        const status = document.getElementById('restoreStatus');
+        if (!signin) return;
+        clearInterval(restoreTimer);
+        restoreTimer = null;
+        signin.style.display = '';
+        if (skip) skip.style.display = '';
+        if (btn) { btn.style.display = 'none'; btn.disabled = true; }
+        if (progress) progress.style.display = 'none';
+        if (status) status.textContent = t('move.restore.signin');
+    }
+    function goRestoreSignIn() {
+        restoreFlow = 'pending';
+        next('s-auraid');
+    }
+    function auraIdContinue() {
+        const wasPending = restoreFlow === 'pending';
+        restoreFlow = 'signed';
+        next(wasPending ? 's-restore' : 's-appsdata');
+    }
+    function startRestore() {
+        const bar = document.getElementById('restoreBar');
+        const status = document.getElementById('restoreStatus');
+        const btn = document.getElementById('restore-btn');
+        const progress = document.getElementById('restoreProgress');
+        const signin = document.getElementById('restore-signin');
+        const skip = document.getElementById('restore-skip');
+        if (!bar) return;
+        clearInterval(restoreTimer);
+        restoreTimer = null;
+        if (signin) signin.style.display = 'none';
+        if (skip) skip.style.display = 'none';
+        if (progress) progress.style.display = '';
+        if (btn) { btn.style.display = ''; btn.disabled = true; }
+        bar.style.width = '0%';
+        status.textContent = t('move.restore.status');
+        let pct = 0;
+        restoreTimer = setInterval(() => {
+            pct = Math.min(100, pct + 2);
+            bar.style.width = pct + '%';
+            if (pct >= 100) {
+                clearInterval(restoreTimer);
+                restoreTimer = null;
+                if (btn) btn.disabled = false;
+                status.textContent = t('move.restore.ready');
+            }
+        }, 60);
+    }
+    function resetTerms() {
+        const box = document.getElementById('terms-box');
+        const btn = document.getElementById('terms-btn');
+        if (box) box.scrollTop = 0;
+        if (btn) btn.disabled = true;
+    }
+    (function initTermsScroll() {
+        const box = document.getElementById('terms-box');
+        if (!box) return;
+        box.addEventListener('scroll', () => {
+            const btn = document.getElementById('terms-btn');
+            if (!btn) return;
+            if (box.scrollTop + box.clientHeight >= box.scrollHeight - 12) btn.disabled = false;
+        });
+    })();
+    function startPair(kind) {
+        const ov = document.getElementById('transferOverlay');
+        if (!ov) return;
+        document.getElementById('xferLabel').textContent = kind === 'ios' ? t('move.ios.connecting') : t('move.android.connecting');
+        document.getElementById('xferSub').textContent = t('move.pairing');
+        ov.classList.add('show');
+        setOverlay(true);
+        setTimeout(() => {
+            document.getElementById('xferLabel').textContent = kind === 'ios' ? t('move.ios.found') : t('move.android.found');
+            document.getElementById('xferSub').textContent = t('move.pairing.done');
+        }, 1800);
+        setTimeout(() => {
+            ov.classList.remove('show');
+            setOverlay(false);
+            next('s-pay');
+        }, 3400);
+    }
+
+    /* power */
+    function togglePowerMenu() {
+        const ov = document.getElementById('powerOverlay');
+        const open = ov.classList.toggle('show');
+        setOverlay(open);
+    }
+    function closePowerMenu() {
+        document.getElementById('powerOverlay').classList.remove('show');
+        setOverlay(false);
+    }
+    function powerAction(kind) {
+        document.getElementById('powerOverlay').classList.remove('show');
+        setOverlay(false);
+        window.location.href = kind === 'restart' ? '../power/restart.html' : '../power/shutdown.html';
+    }
+
     /* aura id */
     function checkAuraId() {
         const e = document.getElementById('auraid-email').value.trim();
@@ -1731,7 +2194,7 @@
 
     /* finish */
     function finishSetup() {
-        next('s-welcome');
+        next('s-customize');
     }
     function goRestart() {
         window.location.href = '../power/restart.html';
@@ -1746,37 +2209,38 @@
     }
 
     /* network indicators, reflect reality */
+    let netWifi = false;
+    function iconSrc(base, dark) {
+        return '../system-assets/' + base + (dark ? '-dark.svg' : '.svg');
+    }
+    function applyStatusTheme() {
+        const dark = phone.classList.contains('dark');
+        const s = document.getElementById('signalIcon');
+        const w = document.getElementById('wifiIcon');
+        if (s) s.src = iconSrc('signal', dark);
+        if (w) w.src = iconSrc(netWifi ? 'wifi' : 'wifi-off', dark);
+    }
     function updateStatusIcons() {
         const online = navigator.onLine;
         const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        const wifiIcon = document.querySelector('.icon-wifi');
+        const wifiIcon = document.getElementById('wifiIcon');
+        const signalIcon = document.getElementById('signalIcon');
         const cellType = document.getElementById('cellType');
-        const rects = document.querySelectorAll('.icon-signal rect');
-        let bars = 4;
-        let showWifi = true;
+        const cellular = online && conn && (conn.type || 'unknown').toLowerCase() === 'cellular';
 
-        if (!online) {
-            bars = 0;
-            showWifi = false;
-            if (cellType) cellType.style.display = 'none';
-        } else if (conn) {
-            const type = (conn.type || 'unknown').toLowerCase();
-            const eff = (conn.effectiveType || '4g').toLowerCase();
-            if (type === 'cellular') {
-                showWifi = false;
-                if (cellType) {
-                    cellType.textContent = (eff === '3g') ? '3G' : (eff === '2g' || eff === 'slow-2g') ? '2G' : 'LTE';
-                    cellType.style.display = '';
-                }
-                bars = (eff === 'slow-2g' || eff === '2g') ? 1 : (eff === '3g' ? 3 : 4);
+        netWifi = joined && !cellular;
+        applyStatusTheme();
+        if (signalIcon) signalIcon.classList.toggle('dim', !joined);
+        if (wifiIcon) wifiIcon.style.display = '';
+        if (cellType) {
+            if (cellular && joined) {
+                const eff = (conn.effectiveType || '4g').toLowerCase();
+                cellType.textContent = (eff === '3g') ? '3G' : (eff === '2g' || eff === 'slow-2g') ? '2G' : 'LTE';
+                cellType.style.display = '';
             } else {
-                if (cellType) cellType.style.display = 'none';
-                bars = (eff === 'slow-2g' || eff === '2g') ? 1 : (eff === '3g' ? 3 : 4);
+                cellType.style.display = 'none';
             }
         }
-
-        wifiIcon.style.display = showWifi ? '' : 'none';
-        rects.forEach((r, i) => r.classList.toggle('off', i >= bars));
     }
 
     /* hello: rotating greetings + swipe to continue */
@@ -1870,6 +2334,9 @@
         hello.addEventListener('pointercancel', () => { swipeYStart = null; });
         hello.addEventListener('click', e => {
             if (e.target.closest('.swipe-hint') && !helloDone) continueFromHello();
+        });
+        hello.addEventListener('wheel', e => {
+            if (e.deltaY > 20 && !helloDone) continueFromHello();
         });
     }
 
