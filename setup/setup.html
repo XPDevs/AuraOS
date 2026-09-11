@@ -500,7 +500,17 @@
                 <div class="row" data-lang="vi" onclick="pickLang(this)"><span>Tiếng Việt</span><span class="check">✓</span></div>
                 <div class="row" data-lang="el" onclick="pickLang(this)"><span>Ελληνικά</span><span class="check">✓</span></div>
             </div>
-            <button class="btn" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
+            <button class="btn" onclick="next('s-region')" data-i18n="continue">Continue</button>
+        </section>
+
+        <!-- REGION -->
+        <section class="screen" id="s-region">
+            <h2 class="top-title" data-i18n="region.title">Country or Region</h2>
+            <p class="body-text" data-i18n="region.body">Select your country or region to set the date, time, currency, measurements and legal requirements used on your device.</p>
+            <div class="list" id="regionList">
+                <div class="row selected"><span>🇦🇺  Australia</span><span class="check">✓</span></div>
+            </div>
+            <button class="btn" id="region-continue" onclick="next('s-wifi')" data-i18n="continue">Continue</button>
         </section>
 
         <!-- WIFI -->
@@ -785,6 +795,9 @@
     /* i18n: applying the selected country's language */
     const I18N = {
         'en': {
+            'region.title': 'Country or Region',
+            'region.body': 'Select your country or region to set the date, time, currency, measurements and legal requirements used on your device.',
+            'toast.region.set': 'Set to {0}',
             'power.restart': 'Restart',
             'power.shutdown': 'Shut Down',
             'power.cancel': 'Cancel',
@@ -869,6 +882,9 @@
             'move.restore.skip': 'Skip for Now, Sign In Later',
         },
         'de': {
+            'region.title': 'Land oder Region',
+            'region.body': 'Wähle dein Land oder deine Region, um Datum, Uhrzeit, Währung, Maßeinheiten und gesetzliche Anforderungen für dein Gerät festzulegen.',
+            'toast.region.set': 'Auf {0} eingestellt',
             'power.restart': 'Neustart',
             'power.shutdown': 'Herunterfahren',
             'power.cancel': 'Abbrechen',
@@ -953,6 +969,9 @@
             'move.restore.skip': 'Später anmelden und jetzt überspringen',
         },
         'fr': {
+            'region.title': 'Pays ou région',
+            'region.body': 'Sélectionnez votre pays ou région pour définir la date, l’heure, la devise, les unités de mesure et les exigences légales de votre appareil.',
+            'toast.region.set': 'Réglé sur {0}',
             'power.restart': 'Redémarrer',
             'power.shutdown': 'Éteindre',
             'power.cancel': 'Annuler',
@@ -1037,6 +1056,9 @@
             'move.restore.skip': 'Ignorer pour l’instant, se connecter plus tard',
         },
         'es': {
+            'region.title': 'País o región',
+            'region.body': 'Selecciona tu país o región para configurar la fecha, la hora, la moneda, las unidades de medida y los requisitos legales de tu dispositivo.',
+            'toast.region.set': 'Configurado en {0}',
             'power.restart': 'Reiniciar',
             'power.shutdown': 'Apagar',
             'power.cancel': 'Cancelar',
@@ -1121,6 +1143,9 @@
             'move.restore.skip': 'Omitir por ahora, iniciar sesión más tarde',
         },
         'it': {
+            'region.title': 'Paese o regione',
+            'region.body': 'Seleziona il tuo paese o regione per impostare data, ora, valuta, unità di misura e requisiti legali del dispositivo.',
+            'toast.region.set': 'Impostato su {0}',
             'power.restart': 'Riavvia',
             'power.shutdown': 'Spegni',
             'power.cancel': 'Annulla',
@@ -1205,6 +1230,9 @@
             'move.restore.skip': 'Salta per ora, accedi più tardi',
         },
         'pt': {
+            'region.title': 'País ou região',
+            'region.body': 'Selecione seu país ou região para definir data, hora, moeda, unidades de medida e requisitos legais do dispositivo.',
+            'toast.region.set': 'Definido para {0}',
             'power.restart': 'Reiniciar',
             'power.shutdown': 'Desligar',
             'power.cancel': 'Cancelar',
@@ -1289,6 +1317,9 @@
             'move.restore.skip': 'Pular por agora, entrar depois',
         },
         'ja': {
+            'region.title': '国または地域',
+            'region.body': '国または地域を選択すると、端末の日付、時刻、通貨、測定単位、法的要件が設定されます。',
+            'toast.region.set': '{0} に設定しました',
             'power.restart': '再起動',
             'power.shutdown': 'シャットダウン',
             'power.cancel': 'キャンセル',
@@ -1373,6 +1404,9 @@
             'move.restore.skip': 'しばらくスキップして、後でサインイン',
         },
         'ko': {
+            'region.title': '국가 또는 지역',
+            'region.body': '국가 또는 지역을 선택하면 기기의 날짜, 시간, 통화, 측정 단위 및 법적 요구 사항이 설정됩니다.',
+            'toast.region.set': '{0}(으)로 설정됨',
             'power.restart': '다시 시작',
             'power.shutdown': '종료',
             'power.cancel': '취소',
@@ -1457,6 +1491,9 @@
             'move.restore.skip': '지금 건너뛰고 나중에 로그인',
         },
         'zh-Hans': {
+            'region.title': '国家或地区',
+            'region.body': '选择你的国家或地区，以设置设备使用的日期、时间、货币、计量单位及法律要求。',
+            'toast.region.set': '已设为 {0}',
             'power.restart': '重新启动',
             'power.shutdown': '关机',
             'power.cancel': '取消',
@@ -1541,6 +1578,9 @@
             'move.restore.skip': '暂时跳过，稍后登录',
         },
         'ar': {
+            'region.title': 'البلد أو المنطقة',
+            'region.body': 'حدد بلدك أو منطقتك لضبط التاريخ والوقت والعملة ووحدات القياس والمتطلبات القانونية على جهازك.',
+            'toast.region.set': 'تم التعيين على {0}',
             'power.restart': 'إعادة تشغيل',
             'power.shutdown': 'إيقاف تشغيل',
             'power.cancel': 'إلغاء',
@@ -1625,6 +1665,9 @@
             'move.restore.skip': 'تخطي الآن، تسجيل الدخول لاحقًا',
         },
         'ru': {
+            'region.title': 'Страна или регион',
+            'region.body': 'Выберите страну или регион, чтобы настроить дату, время, валюту, единицы измерения и юридические требования на устройстве.',
+            'toast.region.set': 'Задано: {0}',
             'power.restart': 'Перезапустить',
             'power.shutdown': 'Завершить работу',
             'power.cancel': 'Отмена',
@@ -1709,6 +1752,9 @@
             'move.restore.skip': 'Пропустить сейчас, войти позже',
         },
         'vi': {
+            'region.title': 'Quốc gia hoặc khu vực',
+            'region.body': 'Chọn quốc gia hoặc khu vực của bạn để thiết lập ngày, giờ, tiền tệ, đơn vị đo lường và các yêu cầu pháp lý trên thiết bị.',
+            'toast.region.set': 'Đã đặt thành {0}',
             'power.restart': 'Khởi động lại',
             'power.shutdown': 'Tắt máy',
             'power.cancel': 'Hủy',
@@ -1793,6 +1839,9 @@
             'move.restore.skip': 'Bỏ qua ngay bây giờ, đăng nhập sau',
         },
         'el': {
+            'region.title': 'Χώρα ή περιοχή',
+            'region.body': 'Επιλέξτε τη χώρα ή την περιοχή σας για να ορίσετε την ημερομηνία, την ώρα, το νόμισμα, τις μονάδες μέτρησης και τις νομικές απαιτήσεις της συσκευής.',
+            'toast.region.set': 'Ορίστηκε σε {0}',
             'power.restart': 'Επανεκκίνηση',
             'power.shutdown': 'Κλείσιμο',
             'power.cancel': 'Ακύρωση',
@@ -1904,6 +1953,7 @@
         const isHello = id === 's-hello';
         if (isHello) enterHello();
         if (id === 's-move-android') startAndroidCode();
+        if (id === 's-region') enterRegion();
         if (id === 's-restore') protectRestore();
         if (id === 's-terms') resetTerms();
         statusbar.style.opacity = isHello ? '0' : '1';
@@ -1939,6 +1989,111 @@
         row.classList.add('selected');
         applyLang(row.getAttribute('data-lang'));
         showToast(t('toast.country.set', row.textContent));
+    }
+
+    /* region */
+    const REGIONS = {
+        en: [
+            { flag: '🇦🇺', name: 'Australia' },
+            { flag: '🇨🇦', name: 'Canada' },
+            { flag: '🇮🇪', name: 'Ireland' },
+            { flag: '🇳🇿', name: 'New Zealand' },
+            { flag: '🇬🇧', name: 'United Kingdom' },
+            { flag: '🇺🇸', name: 'United States' }
+        ],
+        de: [
+            { flag: '🇦🇹', name: 'Austria' },
+            { flag: '🇧🇪', name: 'Belgium' },
+            { flag: '🇩🇪', name: 'Germany' },
+            { flag: '🇱🇮', name: 'Liechtenstein' },
+            { flag: '🇱🇺', name: 'Luxembourg' },
+            { flag: '🇨🇭', name: 'Switzerland' }
+        ],
+        fr: [
+            { flag: '🇧🇪', name: 'Belgium' },
+            { flag: '🇨🇦', name: 'Canada' },
+            { flag: '🇫🇷', name: 'France' },
+            { flag: '🇱🇺', name: 'Luxembourg' },
+            { flag: '🇲🇨', name: 'Monaco' },
+            { flag: '🇨🇭', name: 'Switzerland' }
+        ],
+        es: [
+            { flag: '🇦🇷', name: 'Argentina' },
+            { flag: '🇨🇱', name: 'Chile' },
+            { flag: '🇨🇴', name: 'Colombia' },
+            { flag: '🇲🇽', name: 'Mexico' },
+            { flag: '🇵🇪', name: 'Peru' },
+            { flag: '🇪🇸', name: 'Spain' },
+            { flag: '🇺🇸', name: 'United States' }
+        ],
+        it: [
+            { flag: '🇮🇹', name: 'Italy' },
+            { flag: '🇸🇲', name: 'San Marino' },
+            { flag: '🇨🇭', name: 'Switzerland' },
+            { flag: '🇻🇦', name: 'Vatican City' }
+        ],
+        pt: [
+            { flag: '🇦🇴', name: 'Angola' },
+            { flag: '🇧🇷', name: 'Brazil' },
+            { flag: '🇲🇿', name: 'Mozambique' },
+            { flag: '🇵🇹', name: 'Portugal' }
+        ],
+        ja: [{ flag: '🇯🇵', name: 'Japan' }],
+        ko: [{ flag: '🇰🇷', name: 'South Korea' }],
+        'zh-Hans': [
+            { flag: '🇨🇳', name: 'China' },
+            { flag: '🇭🇰', name: 'Hong Kong' },
+            { flag: '🇸🇬', name: 'Singapore' },
+            { flag: '🇹🇼', name: 'Taiwan' }
+        ],
+        ar: [
+            { flag: '🇧🇭', name: 'Bahrain' },
+            { flag: '🇪🇬', name: 'Egypt' },
+            { flag: '🇮🇶', name: 'Iraq' },
+            { flag: '🇯🇴', name: 'Jordan' },
+            { flag: '🇰🇼', name: 'Kuwait' },
+            { flag: '🇱🇧', name: 'Lebanon' },
+            { flag: '🇲🇦', name: 'Morocco' },
+            { flag: '🇴🇲', name: 'Oman' },
+            { flag: '🇶🇦', name: 'Qatar' },
+            { flag: '🇸🇦', name: 'Saudi Arabia' },
+            { flag: '🇦🇪', name: 'United Arab Emirates' },
+            { flag: '🇾🇪', name: 'Yemen' }
+        ],
+        ru: [
+            { flag: '🇧🇾', name: 'Belarus' },
+            { flag: '🇰🇿', name: 'Kazakhstan' },
+            { flag: '🇰🇬', name: 'Kyrgyzstan' },
+            { flag: '🇷🇺', name: 'Russia' }
+        ],
+        vi: [{ flag: '🇻🇳', name: 'Vietnam' }],
+        el: [
+            { flag: '🇨🇾', name: 'Cyprus' },
+            { flag: '🇬🇷', name: 'Greece' }
+        ]
+    };
+    let currentRegion = REGIONS.en[0];
+    function enterRegion() {
+        const list = document.getElementById('regionList');
+        if (!list) return;
+        const opts = REGIONS[curLang] || REGIONS.en;
+        list.innerHTML = '';
+        opts.forEach((r, idx) => {
+            const row = document.createElement('div');
+            row.className = 'row' + (idx === 0 ? ' selected' : '');
+            row.innerHTML = '<span>' + r.flag + '  ' + r.name + '</span><span class="check">✓</span>';
+            row.onclick = () => pickRegion(row, r);
+            list.appendChild(row);
+        });
+        currentRegion = opts[0];
+        const cont = document.getElementById('region-continue');
+        if (cont) cont.disabled = false;
+    }
+    function pickRegion(row, r) {
+        row.parentElement.querySelectorAll('.row').forEach(x => x.classList.remove('selected'));
+        row.classList.add('selected');
+        currentRegion = r;
+        showToast(t('toast.region.set', r.name));
     }
     function pickCard(c) {
         c.parentElement.querySelectorAll('.card').forEach(x => x.classList.remove('selected'));
