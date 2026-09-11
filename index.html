@@ -2,31 +2,127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Boot Sequence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup</title>
     <style>
-        * {
-            box-sizing: border-box;
+        body {
+            background-color: #000;
             margin: 0;
             padding: 0;
-        }
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #000000;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
-            position: fixed;
+            cursor: none;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px; 
+            transform: translateY(-15px); 
+        }
+
+        .logo {
+            width: 280px;
+            height: auto;
+            margin-bottom: 72px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 4px; 
+            background-color: #333333; 
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #ffffff;
+            border-radius: 10px;
+            /* Using a slower transition for more gradual movement */
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fade-out {
+            animation: appleFadeOut 1.2s ease-in forwards;
+        }
+
+        @keyframes appleFadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
     </style>
 </head>
 <body>
+
+    <div class="container" id="boot-container">
+        <img src="boot/boot_logo.png" alt="Logo" class="logo">
+
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+
     <script>
-        function runBootSequence() {
-            setTimeout(() => {
-                window.location.href = 'boot/boot.html';
-            }, 2000);
-        }
-        document.addEventListener('DOMContentLoaded', runBootSequence);
+        document.addEventListener('DOMContentLoaded', () => {
+            const bar = document.getElementById('progress-bar');
+            const container = document.getElementById('boot-container');
+            const update = new URLSearchParams(window.location.search).get('update') === 'true';
+            let progress = 0;
+
+            function updateProgress() {
+                let step = 0;
+                let nextDelay = 800;
+                
+                if (progress < 20) {
+                    step = Math.random() * 3 + 2;
+                    nextDelay = 600;
+                } else if (progress < 50) {
+                    step = Math.random() * 4 + 2;
+                    nextDelay = 700;
+                } else if (progress < 75) {
+                    step = Math.random() * 3 + 1;
+                    nextDelay = 800;
+                } else if (progress < 92) {
+                    step = Math.random() * 1 + 0.5;
+                    nextDelay = 1000;
+                } else if (progress < 100) {
+                    step = 3;
+                    nextDelay = 500;
+                }
+
+                progress += step;
+
+                if (progress > 100) progress = 100;
+                
+                bar.style.width = progress + '%';
+
+                if (progress < 100) {
+                    setTimeout(updateProgress, nextDelay);
+                } else {
+                    setTimeout(() => {
+                        container.classList.add('fade-out');
+                        setTimeout(() => {
+                            if (update) {
+                                window.location.href = 'power/restart.html';
+                            } else {
+                                window.location.href = 'power/restart.html';
+                            }
+                        }, 1200);
+                    }, 1500);
+                }
+            }
+
+            setTimeout(updateProgress, 3000);
+        });
     </script>
 </body>
 </html>
