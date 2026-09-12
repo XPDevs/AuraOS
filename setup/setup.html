@@ -479,7 +479,7 @@
             </div>
             <div class="swipe-hint">
                 <div class="chev">⌄</div>
-                <div class="swipe-text" data-i18n="hello.swipe">Swipe down to continue</div>
+                <div class="swipe-text" data-i18n="hello.swipe">Swipe up to continue</div>
             </div>
         </section>
 
@@ -654,26 +654,6 @@
             <h2 class="top-title" style="text-align:center" data-i18n="move.ios.title">Move from iPhone or Aura</h2>
             <p class="body-text" style="text-align:center" data-i18n="move.ios.body">Keep your contacts, photos, messages, and more. Place the devices side by side to transfer them directly.</p>
             <button class="btn center" onclick="startPair('ios')" data-i18n="move.ios.btn">Continue</button>
-        </section>
-
-        <!-- MOVE FROM ANDROID -->
-        <section class="screen" id="s-move-android">
-            <div class="data-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 6.5l6-3v17l-6-3z"/><path d="M14 3.5l6 3-6 14z"/><path d="M10 3.5h4"/><path d="M10 20.5h4"/>
-                </svg>
-            </div>
-            <h2 class="top-title" data-i18n="move.android.title">Move Data from Android</h2>
-            <ol class="move-steps">
-                <li data-i18n="move.android.s1">Open the Aura quick start on your Android device.</li>
-                <li data-i18n="move.android.s2">Download and open the XPDevs Move app from your app store.</li>
-                <li data-i18n="move.android.s3">On Android, tap Continue and enter the code shown on this Aura.</li>
-            </ol>
-            <div class="code-box">
-                <div class="code-label" data-i18n="move.android.codeLabel">Enter this code to start moving</div>
-                <div class="move-code" id="moveCode"></div>
-            </div>
-            <button class="btn" onclick="next('s-pay')" data-i18n="continue">Continue</button>
         </section>
 
         <!-- RESTORE FROM CLOUD -->
@@ -2731,7 +2711,7 @@
         const hello = document.getElementById('s-hello');
         hello.addEventListener('pointerdown', e => { swipeYStart = e.clientY; });
         hello.addEventListener('pointermove', e => {
-            if (swipeYStart !== null && e.clientY - swipeYStart > 60) {
+            if (swipeYStart !== null && swipeYStart - e.clientY > 60) {
                 swipeYStart = null;
                 continueFromHello();
             }
